@@ -44,15 +44,15 @@ class AC:
         self.run_with_lock(lambda: self._turn_on_critical())
 
     def _turn_on_critical(self):
-        self._api.power_on()
         self._state.is_on = True
+        self._api.power_on()
 
     def turn_off(self):
         self.run_with_lock(lambda: self._turn_off_critical())
 
     def _turn_off_critical(self):
-        self._api.power_off()
         self._state.is_on = False
+        self._api.power_off()
 
     def run_with_lock(self, critical_section_fn):
         self._mutex.acquire(True)

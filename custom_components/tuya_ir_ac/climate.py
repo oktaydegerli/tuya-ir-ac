@@ -49,6 +49,9 @@ from homeassistant.components.climate.const import (
     FAN_LOW,
     FAN_MEDIUM,
     FAN_HIGH,
+    SUPPORT_SWING_MODE,
+    SWING_ON,
+    SWING_OFF,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -305,7 +308,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     @property
     def supported_features(self):
         """Return the list of supported features."""
-        return SUPPORT_TARGET_TEMPERATURE | SUPPORT_FAN_MODE
+        return SUPPORT_TARGET_TEMPERATURE | SUPPORT_FAN_MODE | SUPPORT_SWING_MODE
 
     # actions
 
