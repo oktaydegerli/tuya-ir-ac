@@ -2,6 +2,7 @@
 IS_ON_ATTR = 'is_on'
 MODE_ATTR = 'mode'
 FAN_SPEED_ATTR = 'fan_speed'
+SWING_MODE_ATTR = 'swing_mode'
 TEMP_ATTR = 'temp'
 
 
@@ -12,6 +13,7 @@ class ACState:
         self._is_on = False
         self._mode = 'cool'
         self._fan_speed = 'low'
+        self._swing_mode = True
         self._temp = 25
 
     def get_entity_id(self, attribute):
@@ -51,6 +53,17 @@ class ACState:
         self._fan_speed = value
 
     @property
+    def swing_mode(self):
+        return self._swing_mode
+
+    @swing_mode.setter
+    def swing_mode(self, value):
+        if value is not True and value is not False:
+            raise ValueError('swing_mode must be True or False')
+
+        self._swing_mode = value
+
+    @property
     def temp(self):
         return self._temp
 
@@ -61,7 +74,7 @@ class ACState:
 
         self._temp = value
 
-    def set_initial_state(self, is_on, mode, temp, fan_speed):
+    def set_initial_state(self, is_on, mode, temp, fan_speed, swing_mode):
         if is_on is None:
             is_on = False
         self.is_on = is_on
@@ -77,3 +90,7 @@ class ACState:
         if fan_speed is None:
             fan_speed = 'low'
         self.fan_speed = fan_speed
+
+        if swing_mode is None:
+            swing_mode = True
+        self.swing_mode = swing_mode

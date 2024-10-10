@@ -305,6 +305,17 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     def fan_modes(self):
         """Fan modes."""
         return [FAN_OFF, FAN_AUTO, FAN_LOW, FAN_MEDIUM, FAN_HIGH]
+    
+    @property
+    def swing_mode(self):
+        """Return the swing setting."""
+        return SWING_ON if self._state.swing_mode else SWING_OFF
+    
+    @property
+    def swing_modes(self):
+        """List of available swing modes."""
+        return [SWING_OFF, SWING_ON]
+
 
     @property
     def supported_features(self):
@@ -394,6 +405,17 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         with self._act_and_update():
             self.ac.update_fan_speed(fan_speed)
         _LOGGER.debug(f"fan mode was set to {fan_mode} (fan_speed {fan_speed})")
+
+    def set_swing_mode(self, swing_mode):
+        """Set new target swing operation."""
+        if swing_mode == SWING_ON:
+            self._state.swing_mode = True
+        else:
+            self._state.swing_mode = False
+
+        with self._act_and_update():
+            self.ac.update_swing_mode(fan_speed)
+        
 
     @contextmanager
     def _act_and_update(self):
