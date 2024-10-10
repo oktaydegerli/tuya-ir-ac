@@ -42,8 +42,11 @@ class IRApi:
         if res is not None:
             logger.error("Send IR command failed with %s", res)
 
-    def toggle_power(self):
+    def power_on(self):
         self._send_command(ir_commands["power_on"])
+
+    def power_off(self):
+        self._send_command(ir_commands["power_off"])
 
     def set_state(self, mode, temp, fan_speed):
         if mode not in ['cool', 'heat', 'dry', 'fan', 'auto']:

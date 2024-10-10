@@ -61,9 +61,13 @@ class AC:
         self.run_with_lock(self._toggle_power_critical)
 
     def _toggle_power_critical(self):
-        original_is_on = self._state.is_on
-        self._api.toggle_power()
-        self._state.is_on = not original_is_on
+        if self._state.is_on:
+            self._api.power_off()
+            self._state.is_on = False
+        else:
+            self._api.power_on()
+            self._state.is_on = True
+        
         logger.debug("current on is: " + str(self._state.is_on))
 
     def run_with_lock(self, critical_section_fn):
