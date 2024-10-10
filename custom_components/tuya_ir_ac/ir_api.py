@@ -10,14 +10,12 @@ logger = logging.getLogger(__name__ + ".client.ir_api")
 
 current_dir = os.path.dirname(__file__)
 commands_path = os.path.join(current_dir, './ac-commands.json5')
-# Read from json file ac-commands.json
+
 with open(commands_path, 'r') as f:
     ir_commands = json5.load(f)
 
 
 class IRApi:
-    # Credentials for the IR device
-    # From python -m tinytuya scan
     def __init__(self, ir_device_id: str, device_local_key: str, device_ip: str, version: str ='3.3'):
         self.ir_device_id = ir_device_id
         self.device_local_key = device_local_key
@@ -28,6 +26,7 @@ class IRApi:
     def setup(self):
         self._device_api = tinytuya.Device(self.ir_device_id, self.device_ip, self.device_local_key)
         self._device_api.set_version(self.version)
+        logger.error("Setup error")
 
     def _send_command(self, command_id: str):
         b64 = codecs.encode(codecs.decode(command_id, 'hex'), 'base64').decode()
@@ -41,6 +40,8 @@ class IRApi:
 
         if res is not None:
             logger.error("Send IR command failed with %s", res)
+
+        logger.error("Send error")
 
     def power_on(self):
         self._send_command(ir_commands["power_on"])
