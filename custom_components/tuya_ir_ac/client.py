@@ -22,7 +22,7 @@ class AC:
     def _update_temp_critical(self, new_temp):
         self._state.is_on = True
         self._state.temp = int(new_temp)
-        self._api.set_state(self._state.mode, self._state.temp, self._state.fan_speed, self._state.swing_mode)
+        self._api.set_state(self._state.mode, self._state.temp, self._state.fan_speed)
 
     def update_mode(self, new_mode):
         self.run_with_lock(lambda: self._update_mode_critical(new_mode))
@@ -30,7 +30,7 @@ class AC:
     def _update_mode_critical(self, new_mode):
         self._state.is_on = True
         self._state.mode = new_mode
-        self._api.set_state(self._state.mode, self._state.temp, self._state.fan_speed, self._state.swing_mode)
+        self._api.set_state(self._state.mode, self._state.temp, self._state.fan_speed)
 
     def update_fan_speed(self, new_fan_speed):
         self.run_with_lock(lambda: self._update_fan_speed_critical(new_fan_speed))
@@ -38,15 +38,7 @@ class AC:
     def _update_fan_speed_critical(self, new_fan_speed):
         self._state.is_on = True
         self._state.fan_speed = new_fan_speed
-        self._api.set_state(self._state.mode, self._state.temp, self._state.fan_speed, self._state.swing_mode)
-
-    def update_swing_mode(self, new_swing_mode):
-        self.run_with_lock(lambda: self._update_swing_mode_critical(new_swing_mode))
-
-    def _update_swing_mode_critical(self, new_swing_mode):
-        self._state.is_on = True
-        self._state.swing_mode = new_swing_mode
-        self._api.set_state(self._state.mode, self._state.temp, self._state.swing_mode, self._state.swing_mode)
+        self._api.set_state(self._state.mode, self._state.temp, self._state.fan_speed)
 
     def turn_on(self):
         self.run_with_lock(lambda: self._turn_on_critical())
