@@ -2,14 +2,11 @@ import asyncio
 import time
 import logging
 from contextlib import contextmanager
-
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.restore_state import RestoreEntity
-
 from typing import Any, Callable, Dict, Optional
-
 from .ac_state import ACState
 from .client import AC
 
@@ -128,13 +125,12 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         if prev:
             _LOGGER.info("prev state: %s", prev.state)
             _LOGGER.info("prev attributes: %s", prev.attributes)
-            self._state.set_initial_state(prev.attributes.get("internal_is_on", False), prev.attributes.get("internal_mode", None), prev.attributes.get("internal_temp", None), prev.attributes.get("internal_fan_speed", None))
+            self._state.set_initial_state(prev.attributes.get("internal_mode", None), prev.attributes.get("internal_temp", None), prev.attributes.get("internal_fan_speed", None))
 
     @property
     def extra_state_attributes(self):
         """Return the state attributes."""
         return {
-            "internal_is_on": self._state.is_on,
             "internal_mode": self._state.mode,
             "internal_fan_speed": self._state.fan_speed,
             "internal_temp": self._state.temp,
@@ -174,12 +170,6 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     @property
     def current_temperature(self):
         """Return the current temperature."""
-        # TODO - I hope that this means in the AC
-
-        if not self._state.is_on:
-            _LOGGER.debug(f"current_temperature: ac is off")
-            # return None
-
         value = self._state.temp
         if value is not None:
             value = int(value)
@@ -190,8 +180,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     def target_temperature(self):
         """Return the temperature we try to reach."""
 
-        # TODO - not supported in the moment - will return the current temperature
-        if not self._state.is_on:
+        if self._state.mode == 'off':
             _LOGGER.debug(f"target_temperature: ac is off")
             return None
 
@@ -208,7 +197,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     MODE_BY_NAME = {"IDLE": CURRENT_HVAC_IDLE}
 
     HVAC_MODE_MAPPING = {
-        "STBY": HVAC_MODE_OFF,
+        "OFF": HVAC_MODE_OFF,
         "COOL": HVAC_MODE_COOL,
         "FAN": HVAC_MODE_FAN_ONLY,
         "DRY": HVAC_MODE_DRY,
@@ -221,7 +210,8 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     @property
     def hvac_mode(self):
         """Return hvac operation ie. heat, cool mode."""
-        if not self._state.is_on:
+        
+        if self._state.mode == 'off':
             _LOGGER.debug(f"hvac_mode: ac is off")
             return HVAC_MODE_OFF
 
@@ -249,7 +239,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             _LOGGER.warning(f"hvac_mode: unknown mode: " + self._state.mode)
 
             # Not returning off as if it's on then we would be completely off
-            return HVAC_MODE_COOL
+            return HVAC_MODE_OFF
 
     @property
     def hvac_modes(self):
@@ -276,8 +266,8 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     @property
     def fan_mode(self):
         """Returns the current fan mode (low, high, auto etc)"""
-        if not self._state.is_on:
-            _LOGGER.debug(f"fan_mode: returning FAN_OFF - device is off")
+        if self._state.mode == 'off':
+            _LOGGER.debug(f"fan_mode: returning FAN_OFF - ac is off")
             return FAN_OFF
 
         _LOGGER.debug(f"fan_mode: fan_speed is " + self._state.fan_speed)
@@ -324,16 +314,12 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     def set_hvac_mode(self, hvac_mode):
         _LOGGER.debug(f"setting hvac mode to {hvac_mode}")
-        if hvac_mode == HVAC_MODE_OFF:
-            _LOGGER.debug(f"turning off ac due to hvac_mode being set to {hvac_mode}")
-            with self._act_and_update():
-                self.ac.turn_off()
-            _LOGGER.debug(
-                f"ac has been turned off due hvac_mode being set to {hvac_mode}"
-            )
-            return
 
         ac_mode = None
+
+        if hvac_mode == HVAC_MODE_OFF:
+            _LOGGER.debug(f"set_hvac_mode: ac is cool")
+            ac_mode = 'off'
 
         if hvac_mode == HVAC_MODE_COOL:
             _LOGGER.debug(f"set_hvac_mode: ac is cool")

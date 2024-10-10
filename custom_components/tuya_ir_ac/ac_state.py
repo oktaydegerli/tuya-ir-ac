@@ -1,5 +1,4 @@
 
-IS_ON_ATTR = 'is_on'
 MODE_ATTR = 'mode'
 FAN_SPEED_ATTR = 'fan_speed'
 TEMP_ATTR = 'temp'
@@ -9,24 +8,13 @@ class ACState:
     def __init__(self, entity, hass):
         self._hass = hass
         self._entity = entity
-        self._is_on = False
-        self._mode = 'cool'
+        self._mode = 'off'
         self._fan_speed = 'low'
         self._temp = 25
 
     def get_entity_id(self, attribute):
         return f'{self._entity.unique_id}.{attribute}'
 
-    @property
-    def is_on(self):
-        return self._is_on
-
-    @is_on.setter
-    def is_on(self, value):
-        if value is not True and value is not False:
-            raise ValueError('is_on must be True or False')
-
-        self._is_on = value
 
     @property
     def mode(self):
@@ -61,19 +49,19 @@ class ACState:
 
         self._temp = value
 
-    def set_initial_state(self, is_on, mode, temp, fan_speed):
-        if is_on is None:
-            is_on = False
-        self.is_on = is_on
+    def set_initial_state(self, mode, temp, fan_speed):
 
         if mode is None:
-            mode = 'cool'
+            mode = 'off'
+
         self.mode = mode
 
         if temp is None:
             temp = 25
+
         self.temp = temp
 
         if fan_speed is None:
             fan_speed = 'low'
+
         self.fan_speed = fan_speed

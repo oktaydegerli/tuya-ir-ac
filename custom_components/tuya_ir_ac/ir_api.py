@@ -8,9 +8,13 @@ import logging
 
 logger = logging.getLogger(__name__ + ".client.ir_api")
 
-current_dir = os.path.dirname(__file__)
-commands_path = os.path.join(current_dir, './ac-commands.json5')
+
 # Read from json file ac-commands.json
+
+current_dir = os.path.dirname(__file__)
+
+commands_path = os.path.join(current_dir, './ac-commands.json5')
+
 with open(commands_path, 'r') as f:
     ir_commands = json5.load(f)
 
@@ -40,12 +44,9 @@ class IRApi:
         if res is not None:
             logger.error("Send IR command failed with %s", res)
 
-    def power_off(self):
-        self._send_command(ir_commands["power_off"])
-
     def set_state(self, mode, temp, fan_speed):
-        if mode not in ['cool', 'heat', 'dry', 'fan', 'auto']:
-            msg = 'Mode must be one of cool, heat, dry, fan or auto, got ' + mode
+        if mode not in ['off', 'cool', 'heat', 'dry', 'fan', 'auto']:
+            msg = 'Mode must be one of off, cool, heat, dry, fan or auto, got ' + mode
             logger.error(msg)
             raise Exception(msg)
 
@@ -57,5 +58,9 @@ class IRApi:
         if mode == 'dry':
             fan_speed = 'low'
 
-        key_id = ir_commands[mode][fan_speed][str(temp)]
+        if mode == "off":
+            key_id = ir_commands["off"]
+        else: 
+            key_id = ir_commands[mode][fan_speed][str(temp)]
+
         self._send_command(key_id)
