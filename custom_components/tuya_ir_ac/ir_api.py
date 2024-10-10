@@ -60,17 +60,7 @@ class IRApi:
             raise Exception(msg)
 
         if mode == 'dry':
-            # Dry mode only supports low fan speed
             fan_speed = 'low'
 
-        # Got the learning code:
-        # https://developer.tuya.com/en/docs/cloud/5c93c9ffc5?id=Kb3oebi2lvz0k
-        # Than get the logs through the Tuya dashboard
         key_id = ir_commands[mode][fan_speed][str(temp)]
         self._send_command(key_id)
-
-        return {
-            "mode": mode,
-            "temp": temp,
-            "fan_speed": fan_speed,
-        }

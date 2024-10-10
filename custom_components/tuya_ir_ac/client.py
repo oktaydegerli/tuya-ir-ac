@@ -15,22 +15,20 @@ class AC:
         self._api.setup()
 
     def update_temp(self, new_temp):
-        res = self._api.set_state(self._state.mode, new_temp, self._state.fan_speed)
-        self._update_from_result(res)
+        self._state.is_on = True
+        self._state.temp = int(new_temp)
+        self._api.set_state(self._state.mode, self._state.temp, self._state.fan_speed)
+
 
     def update_mode(self, new_mode):
-        res = self._api.set_state(new_mode, self._state.temp, self._state.fan_speed)
-        self._update_from_result(res)
+        self._state.is_on = True
+        self._state.mode = new_mode
+        self._api.set_state(self._state.mode, self._state.temp, self._state.fan_speed)
 
     def update_fan_speed(self, new_fan_speed):
-        res = self._api.set_state(self._state.mode, self._state.temp, new_fan_speed)
-        self._update_from_result(res)
-
-    def _update_from_result(self, res):
         self._state.is_on = True
-        self._state.mode = res["mode"]
-        self._state.fan_speed = res["fan_speed"]
-        self._state.temp = int(res["temp"])
+        self._state.fan_speed = new_fan_speed
+        self._api.set_state(self._state.mode, self._state.temp, self._state.fan_speed)
 
     def turn_on(self):
         self._api.power_on()
