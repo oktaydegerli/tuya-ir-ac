@@ -1,1 +1,1 @@
-# tuya_ir_ac
+# tuya-ir-ac
