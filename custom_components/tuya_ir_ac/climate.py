@@ -131,7 +131,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         if prev:
             _LOGGER.info("prev state: %s", prev.state)
             _LOGGER.info("prev attributes: %s", prev.attributes)
-            self._state.set_initial_state(prev.attributes.get("internal_is_on", False), prev.attributes.get("internal_mode", None), prev.attributes.get("internal_temp", None), prev.attributes.get("internal_fan_speed", None))
+            self._state.set_initial_state(prev.attributes.get("internal_is_on", False), prev.attributes.get("internal_mode", None), prev.attributes.get("internal_temp", None), prev.attributes.get("internal_fan_speed", None), prev.attributes.get("internal_swing_mode", None))
 
     @property
     def extra_state_attributes(self):
@@ -141,6 +141,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             "internal_mode": self._state.mode,
             "internal_fan_speed": self._state.fan_speed,
             "internal_temp": self._state.temp,
+            "internal_swing_mode": self._state.swing_mode,
         }
 
     # managed properties
