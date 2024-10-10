@@ -394,7 +394,6 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     @contextmanager
     def _act_and_update(self):
         yield
-        time.sleep(2)
 
         asyncio.run_coroutine_threadsafe(
             self.async_update_ha_state(), self._hass.loop

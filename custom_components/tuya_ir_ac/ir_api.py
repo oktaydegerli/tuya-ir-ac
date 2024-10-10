@@ -26,7 +26,6 @@ class IRApi:
     def setup(self):
         self._device_api = tinytuya.Device(self.ir_device_id, self.device_ip, self.device_local_key)
         self._device_api.set_version(self.version)
-        logger.error("Setup error")
 
     def _send_command(self, command_id: str):
         b64 = codecs.encode(codecs.decode(command_id, 'hex'), 'base64').decode()
@@ -40,8 +39,6 @@ class IRApi:
 
         if res is not None:
             logger.error("Send IR command failed with %s", res)
-
-        logger.error("Send error")
 
     def power_on(self):
         self._send_command(ir_commands["power_on"])
