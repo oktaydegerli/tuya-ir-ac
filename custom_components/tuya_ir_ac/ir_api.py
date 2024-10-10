@@ -3,7 +3,6 @@ import json
 import tinytuya
 import json5
 import codecs
-
 import logging
 
 logger = logging.getLogger(__name__ + ".client.ir_api")
@@ -32,11 +31,14 @@ class IRApi:
         self._device_api.set_version(self.version)
 
     def _send_command(self, command_id: str):
+        
         b64 = codecs.encode(codecs.decode(command_id, 'hex'), 'base64').decode()
+        
         payload = self._device_api.generate_payload(tinytuya.CONTROL, {
             "1": "study_key", 
             "7": b64
         })
+        
         res = self._device_api.send(payload)
 
         logger.debug("Send IR command result: %s", json.dumps(res, indent=2))
