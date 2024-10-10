@@ -40,9 +40,6 @@ class IRApi:
         if res is not None:
             logger.error("Send IR command failed with %s", res)
 
-    def power_on(self):
-        self._send_command(ir_commands["power_on"])
-
     def power_off(self):
         self._send_command(ir_commands["power_off"])
 

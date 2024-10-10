@@ -40,13 +40,6 @@ class AC:
         self._state.fan_speed = new_fan_speed
         self._api.set_state(self._state.mode, self._state.temp, self._state.fan_speed)
 
-    def turn_on(self):
-        self.run_with_lock(lambda: self._turn_on_critical())
-
-    def _turn_on_critical(self):
-        self._state.is_on = True
-        self._api.power_on()
-
     def turn_off(self):
         self.run_with_lock(lambda: self._turn_off_critical())
 
