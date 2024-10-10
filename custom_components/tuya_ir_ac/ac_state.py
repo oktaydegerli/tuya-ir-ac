@@ -22,8 +22,8 @@ class ACState:
 
     @mode.setter
     def mode(self, value):
-        if value not in ['cool', 'heat', 'dry', 'fan', 'auto']:
-            raise ValueError('Mode must be one of cool, heat, dry, fan or auto, got ' + value)
+        if value not in ['off', 'cool', 'heat', 'dry', 'fan', 'auto']:
+            raise ValueError('Mode must be one of off, cool, heat, dry, fan or auto, got ' + value)
 
         self._mode = value
 
