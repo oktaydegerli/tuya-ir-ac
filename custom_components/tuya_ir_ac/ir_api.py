@@ -31,7 +31,7 @@ class IRApi:
 
     def _send_command(self, command_id: str):
         b64 = codecs.encode(codecs.decode(command_id, 'hex'), 'base64').decode()
-        payload = device_api.generate_payload(tinytuya.CONTROL, {
+        payload = self._device_api.generate_payload(tinytuya.CONTROL, {
             "1": "study_key", 
             "7": b64
         })
