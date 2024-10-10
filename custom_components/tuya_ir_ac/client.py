@@ -45,6 +45,7 @@ class AC:
         self._state.mode = res["mode"]
         self._state.fan_speed = res["fan_speed"]
         self._state.temp = int(res["temp"])
+        self._state.is_on = True
 
     def turn_off(self):
         if self._state.is_on:
