@@ -21,7 +21,6 @@ class AC:
         self._api.setup()
 
     def update_temp(self, new_temp):
-        self.turn_on()
         self.run_with_lock(lambda: self._update_temp_critical(new_temp))
 
     def _update_temp_critical(self, new_temp):
@@ -29,7 +28,6 @@ class AC:
         self._update_from_result(res)
 
     def update_mode(self, mode):
-        self.turn_on()
         self.run_with_lock(lambda: self._update_mode_critical(mode))
 
     def _update_mode_critical(self, new_mode):
@@ -37,7 +35,6 @@ class AC:
         self._update_from_result(res)
 
     def update_fan_speed(self, fan_speed):
-        self.turn_on()
         self.run_with_lock(lambda: self._update_fan_speed_critical(fan_speed))
 
     def _update_fan_speed_critical(self, new_fan_speed):
@@ -51,24 +48,13 @@ class AC:
 
     def turn_off(self):
         if self._state.is_on:
-            self.toggle_power()
+            self._api.power_off()
+            self._state.is_on = False
 
     def turn_on(self):
         if not self._state.is_on:
-            self.toggle_power()
-
-    def toggle_power(self):
-        self.run_with_lock(self._toggle_power_critical)
-
-    def _toggle_power_critical(self):
-        if self._state.is_on:
-            self._api.power_off()
-            self._state.is_on = False
-        else:
             self._api.power_on()
-            self._state.is_on = True
-        
-        logger.debug("current on is: " + str(self._state.is_on))
+            self._state.is_on = True        
 
     def run_with_lock(self, critical_section_fn):
         self._mutex.acquire(True)
