@@ -2,6 +2,7 @@ import os
 import json
 import tinytuya
 import json5
+import codecs
 
 import logging
 
@@ -29,14 +30,10 @@ class IRApi:
         self._device_api.set_version(self.version)
 
     def _send_command(self, command_id: str):
-        payload = self._device_api.generate_payload(tinytuya.CONTROL, {
-            "201": json.dumps({
-                "control": "send_ir",
-                "head": "",
-                "key1": command_id,
-                "type": 0,
-                "delay": 300
-            })
+        b64 = codecs.encode(codecs.decode(command_id, 'hex'), 'base64').decode()
+        payload = device_api.generate_payload(tinytuya.CONTROL, {
+            "1": "study_key", 
+            "7": b64
         })
         res = self._device_api.send(payload)
 
