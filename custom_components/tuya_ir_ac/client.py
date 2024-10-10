@@ -42,20 +42,24 @@ class AC:
         self._update_from_result(res)
 
     def _update_from_result(self, res):
+        self._state.is_on = True
         self._state.mode = res["mode"]
         self._state.fan_speed = res["fan_speed"]
         self._state.temp = int(res["temp"])
+
+    def turn_on(self):
+        self.run_with_lock(lambda: self._turn_on_critical())
+
+    def _turn_on_critical(self):
+        self._api.power_on()
         self._state.is_on = True
 
     def turn_off(self):
-        if self._state.is_on:
-            self._api.power_off()
-            self._state.is_on = False
+        self.run_with_lock(lambda: self._turn_off_critical())
 
-    def turn_on(self):
-        if not self._state.is_on:
-            self._api.power_on()
-            self._state.is_on = True        
+    def _turn_off_critical(self):
+        self._api.power_off()
+        self._state.is_on = False
 
     def run_with_lock(self, critical_section_fn):
         self._mutex.acquire(True)
