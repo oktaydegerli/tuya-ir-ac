@@ -44,6 +44,7 @@ from homeassistant.components.climate.const import (
     FAN_AUTO,
     FAN_LOW,
     FAN_MEDIUM,
+    FAN_MIDDLE,
     FAN_HIGH,
 )
 
@@ -256,6 +257,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     FAN_MODE_MAPPING = {
         "LOW": FAN_LOW,
         "MED": FAN_MEDIUM,
+        "MID": FAN_MIDDLE,
         "HIGH": FAN_HIGH,
         "AUTO": FAN_AUTO,
     }
@@ -276,6 +278,9 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
         if self._state.fan_speed == 'medium':
             return FAN_MEDIUM
+        
+        if self._state.fan_speed == 'middle':
+            return FAN_MIDDLE
 
         if self._state.fan_speed == 'high':
             return FAN_HIGH
@@ -289,7 +294,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     @property
     def fan_modes(self):
         """Fan modes."""
-        return [FAN_AUTO, FAN_LOW, FAN_MEDIUM, FAN_HIGH]
+        return [FAN_AUTO, FAN_LOW, FAN_MEDIUM, FAN_MIDDLE, FAN_HIGH]
 
     @property
     def supported_features(self):
@@ -360,6 +365,9 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
         if fan_mode == FAN_MEDIUM:
             fan_speed = 'medium'
+
+        if fan_mode == FAN_MIDDLE:
+            fan_speed = 'middle'
 
         if fan_mode == FAN_HIGH:
             fan_speed = 'high'
