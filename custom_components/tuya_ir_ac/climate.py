@@ -41,7 +41,6 @@ from homeassistant.components.climate.const import (
     HVAC_MODE_HEAT_COOL,
     SUPPORT_TARGET_TEMPERATURE,
     SUPPORT_FAN_MODE,
-    FAN_OFF,
     FAN_AUTO,
     FAN_LOW,
     FAN_MEDIUM,
@@ -267,8 +266,8 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     def fan_mode(self):
         """Returns the current fan mode (low, high, auto etc)"""
         if self._state.mode == 'off':
-            _LOGGER.debug(f"fan_mode: returning FAN_OFF - ac is off")
-            return FAN_OFF
+            _LOGGER.debug(f"fan_mode: returning FAN_MEDIUM - ac is off")
+            return FAN_MEDIUM
 
         _LOGGER.debug(f"fan_mode: fan_speed is " + self._state.fan_speed)
 
@@ -290,7 +289,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     @property
     def fan_modes(self):
         """Fan modes."""
-        return [FAN_OFF, FAN_AUTO, FAN_LOW, FAN_MEDIUM, FAN_HIGH]
+        return [FAN_AUTO, FAN_LOW, FAN_MEDIUM, FAN_HIGH]
 
     @property
     def supported_features(self):

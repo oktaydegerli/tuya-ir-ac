@@ -9,7 +9,7 @@ class ACState:
         self._hass = hass
         self._entity = entity
         self._mode = 'off'
-        self._fan_speed = 'low'
+        self._fan_speed = 'medium'
         self._temp = 25
 
     def get_entity_id(self, attribute):
@@ -62,6 +62,6 @@ class ACState:
         self.temp = temp
 
         if fan_speed is None:
-            fan_speed = 'low'
+            fan_speed = 'medium'
 
         self.fan_speed = fan_speed
