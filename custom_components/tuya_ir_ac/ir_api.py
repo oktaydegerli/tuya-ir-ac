@@ -26,13 +26,12 @@ with open(commands_path2, 'r') as f:
 
 
 class IRApi:
-    def __init__(self, ir_device_id: str, device_local_key: str, device_ip: str, version: str = '3.3', device_model: str = 'MSZ-GE25VA'):
+    def __init__(self, ir_device_id: str, device_local_key: str, device_ip: str, version: str ='3.3'):
         self.ir_device_id = ir_device_id
         self.device_local_key = device_local_key
         self.device_ip = device_ip
         self.version = float('3.3' if version is None else version)
         self._device_api = None
-        self._device_model = device_model
 
     def setup(self):
         self._device_api = tinytuya.Device(self.ir_device_id, self.device_ip, self.device_local_key)
@@ -66,14 +65,8 @@ class IRApi:
             raise Exception(msg)
 
         if mode == "off":
-            if self._device_model == 'MSZ-GE25VA':
-                key_id = ir_commands1["off"]
-            else:
-                key_id = ir_commands2["off"]
+            key_id = ir_commands2["off"]
         else: 
-            if self._device_model == 'MSC-GE35VB':
-                key_id = ir_commands1[mode][fan_speed][str(temp)]
-            else:
-                key_id = ir_commands2[mode][fan_speed][str(temp)]
+            key_id = ir_commands2[mode][fan_speed][str(temp)]
 
         self._send_command(key_id)
