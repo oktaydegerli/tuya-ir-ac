@@ -12,19 +12,27 @@ logger = logging.getLogger(__name__ + ".client.ir_api")
 
 current_dir = os.path.dirname(__file__)
 
-commands_path = os.path.join(current_dir, './ac-commands-2.json5')
 
-with open(commands_path, 'r') as f:
-    ir_commands = json5.load(f)
+commands_path1 = os.path.join(current_dir, './ac-commands-1.json5')
+commands_path2 = os.path.join(current_dir, './ac-commands-2.json5')
+
+with open(commands_path1, 'r') as f:
+    ir_commands1 = json5.load(f)
+
+with open(commands_path2, 'r') as f:
+    ir_commands2 = json5.load(f)
+
+
 
 
 class IRApi:
-    def __init__(self, ir_device_id: str, device_local_key: str, device_ip: str, version: str ='3.3'):
+    def __init__(self, ir_device_id: str, device_local_key: str, device_ip: str, version: str = '3.3', ac_type: int = 1):
         self.ir_device_id = ir_device_id
         self.device_local_key = device_local_key
         self.device_ip = device_ip
         self.version = float('3.3' if version is None else version)
         self._device_api = None
+        self._ac_type = ac_type
 
     def setup(self):
         self._device_api = tinytuya.Device(self.ir_device_id, self.device_ip, self.device_local_key)
@@ -58,8 +66,14 @@ class IRApi:
             raise Exception(msg)
 
         if mode == "off":
-            key_id = ir_commands["off"]
+            if self._ac_type == 1:
+                key_id = ir_commands1["off"]
+            else:
+                key_id = ir_commands2["off"]
         else: 
-            key_id = ir_commands[mode][fan_speed][str(temp)]
+            if self._ac_type == 1:
+                key_id = ir_commands1[mode][fan_speed][str(temp)]
+            else:
+                key_id = ir_commands2[mode][fan_speed][str(temp)]
 
         self._send_command(key_id)
