@@ -17,6 +17,7 @@ climate:
         tuya_device_local_key: "<your Tuya device local key>" # it is recommended to use secrets here
         tuya_device_ip: '192.168.1.2'
         tuya_device_version: '3.3'
+        tuya_ac_type: 1
 ```
 - Restart Home Assistant
 - Done

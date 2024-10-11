@@ -65,6 +65,7 @@ AC_SCHEMA = vol.Schema(
         vol.Required(CONF_AC_TUYA_DEVICE_LOCAL_KEY): cv.string,
         vol.Required(CONF_AC_TUYA_DEVICE_IP): cv.string,
         vol.Required(CONF_AC_TUYA_DEVICE_VERSION, default='3.3'): cv.string,
+        vol.Required(CONF_AC_TUYA_AC_TYPE, default=1): cv.int,
     }
 )
 
