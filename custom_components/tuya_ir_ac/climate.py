@@ -52,7 +52,7 @@ CONF_AC_TUYA_IR_DEVICE_ID = "tuya_ir_device_id"
 CONF_AC_TUYA_DEVICE_LOCAL_KEY = "tuya_device_local_key"
 CONF_AC_TUYA_DEVICE_IP = "tuya_device_ip"
 CONF_AC_TUYA_DEVICE_VERSION = "tuya_device_version"
-CONF_AC_TYPE = "ac_type"
+CONF_AC_TUYA_AC_TYPE = "tuya_ac_type"
 
 DEFAULT_NAME = "TuyaIRAC"
 print("")
@@ -111,7 +111,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             ac_conf[CONF_AC_TUYA_DEVICE_LOCAL_KEY],
             ac_conf[CONF_AC_TUYA_DEVICE_IP],
             ac_conf[CONF_AC_TUYA_DEVICE_VERSION],
-            ac_conf[CONF_AC_TYPE],
+            ac_conf[CONF_AC_TUYA_AC_TYPE],
             self._state
         )
 
