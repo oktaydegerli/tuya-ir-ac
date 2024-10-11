@@ -40,12 +40,7 @@ from homeassistant.components.climate.const import (
     HVAC_MODE_HEAT,
     HVAC_MODE_HEAT_COOL,
     SUPPORT_TARGET_TEMPERATURE,
-    SUPPORT_FAN_MODE,
-    FAN_AUTO,
-    FAN_LOW,
-    FAN_MEDIUM,
-    FAN_FOCUS,
-    FAN_HIGH,
+    SUPPORT_FAN_MODE
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -78,6 +73,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     }
 )
 
+FAN_MODES = ['Auto', 'Low', 'Medium-Low', 'Medium', 'Medium-High', 'High', 'Turbo', 'Quiet']
 
 async def async_setup_platform(
         hass: HomeAssistantType,
@@ -90,8 +86,10 @@ async def async_setup_platform(
     _LOGGER.debug("Setting up the TuyaIRAC climate platform conf: %s", config)
     session = async_get_clientsession(hass)
 
+    fan_modes = FAN_MODES
+
     acs = [
-        TuyaIRAC(hass, ac)
+        TuyaIRAC(hass, ac, fan_modes)
         for ac in config.get(CONF_ACS)
     ]
 
@@ -99,12 +97,14 @@ async def async_setup_platform(
 
 
 class TuyaIRAC(RestoreEntity, ClimateEntity):
-    def __init__(self, hass, ac_conf):
+    def __init__(self, hass, ac_conf, fan_modes):
         """Initialize the thermostat."""
         _LOGGER.info("Initializing TuyaIRAC", ac_conf)
         self._name = ac_conf[CONF_AC_NAME]
         self._hass = hass
         self._state = ACState(self, self._hass)
+        self._fan_mode = None
+        self._fan_modes = fan_modes
         self.ac = AC(
             ac_conf[CONF_AC_TUYA_IR_DEVICE_ID],
             ac_conf[CONF_AC_TUYA_DEVICE_LOCAL_KEY],
@@ -253,48 +253,13 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             HVAC_MODE_HEAT_COOL,
         ]
 
-
-    FAN_MODE_MAPPING = {
-        "LOW": FAN_LOW,
-        "MED": FAN_MEDIUM,
-        "FOC": FAN_FOCUS,
-        "HIGH": FAN_HIGH,
-        "AUTO": FAN_AUTO,
-    }
-
-    FAN_MODE_MAPPING_INV = {v: k for k, v in FAN_MODE_MAPPING.items()}
-
     @property
     def fan_mode(self):
-        """Returns the current fan mode (low, high, auto etc)"""
-        if self._state.mode == 'off':
-            _LOGGER.debug(f"fan_mode: returning FAN_MEDIUM - ac is off")
-            return FAN_MEDIUM
-
-        _LOGGER.debug(f"fan_mode: fan_speed is " + self._state.fan_speed)
-
-        if self._state.fan_speed == 'low':
-            return FAN_LOW
-
-        if self._state.fan_speed == 'medium':
-            return FAN_MEDIUM
-        
-        if self._state.fan_speed == 'focus':
-            return FAN_FOCUS
-
-        if self._state.fan_speed == 'high':
-            return FAN_HIGH
-
-        if self._state.fan_speed == 'auto':
-            return FAN_AUTO
-
-        _LOGGER.debug(f"fan_mode: unknown fan_speed: " + self._state.fan_speed)
-        return None
+        return self._fan_mode
 
     @property
     def fan_modes(self):
-        """Fan modes."""
-        return [FAN_AUTO, FAN_LOW, FAN_MEDIUM, FAN_FOCUS, FAN_HIGH]
+        return self._fan_modes
 
     @property
     def supported_features(self):
@@ -360,20 +325,29 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
         fan_speed = None
 
-        if fan_mode == FAN_LOW:
+        if fan_mode == 'Auto':
             fan_speed = 'low'
 
-        if fan_mode == FAN_MEDIUM:
+        if fan_mode == 'Low':
             fan_speed = 'medium'
 
-        if fan_mode == FAN_FOCUS:
-            fan_speed = 'focus'
-
-        if fan_mode == FAN_HIGH:
+        if fan_mode == 'Medium-Low':
             fan_speed = 'high'
 
-        if fan_mode == FAN_AUTO:
+        if fan_mode == 'Medium':
             fan_speed = 'auto'
+
+        if fan_mode == 'Medium-High':
+            fan_speed = 'auto'
+
+        if fan_mode == 'High':
+            fan_speed = 'auto'
+
+        if fan_mode == 'Turbo':
+            fan_speed = 'auto'
+
+        if fan_mode == 'Quiet':
+            fan_speed = 'auto'                      
 
         if fan_speed is None:
             _LOGGER.warning("Unsupported fan_mode: " + fan_mode)
