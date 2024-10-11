@@ -160,7 +160,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     @property
     def max_temp(self):
         """Return the maximum temperature."""
-        return 30
+        return 31
 
     @property
     def temperature_unit(self):

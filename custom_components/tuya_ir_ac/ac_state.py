@@ -44,8 +44,8 @@ class ACState:
 
     @temp.setter
     def temp(self, value):
-        if value < 16 or value > 30:
-            raise ValueError('temp must be between 16 and 30, got ' + str(value))
+        if value < 16 or value > 31:
+            raise ValueError('temp must be between 16 and 31, got ' + str(value))
 
         self._temp = value
 

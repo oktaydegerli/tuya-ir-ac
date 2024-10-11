@@ -8,11 +8,11 @@ import logging
 logger = logging.getLogger(__name__ + ".client.ir_api")
 
 
-# Read from json file ac-commands.json
+# Read from json file
 
 current_dir = os.path.dirname(__file__)
 
-commands_path = os.path.join(current_dir, './ac-commands.json5')
+commands_path = os.path.join(current_dir, './ac-commands-2.json5')
 
 with open(commands_path, 'r') as f:
     ir_commands = json5.load(f)
