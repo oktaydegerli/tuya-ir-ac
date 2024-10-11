@@ -17,6 +17,7 @@ climate:
         tuya_device_local_key: "<your Tuya device local key>" # it is recommended to use secrets here
         tuya_device_ip: '192.168.1.2'
         tuya_device_version: '3.3'
+        tuya_device_model: 'MSZ-GE25VA' # MSZ-GE25VA or MSC-GE35VB
 ```
 - Restart Home Assistant
 - Done

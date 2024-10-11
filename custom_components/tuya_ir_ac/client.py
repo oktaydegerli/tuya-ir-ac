@@ -6,12 +6,12 @@ from .ir_api import IRApi
 logger = logging.getLogger(__name__ + ".client")
 
 class AC:
-    def __init__(self, ir_device_id: str, device_local_key: str, device_ip: str, version: str, state: ACState):
-        self._api = IRApi(ir_device_id, device_local_key, device_ip, version)
+    def __init__(self, ir_device_id: str, device_local_key: str, device_ip: str, version: str, state: ACState, device_model: string):
+        self._api = IRApi(ir_device_id, device_local_key, device_ip, version, device_model)
         self._mutex = Lock()
         self._state = state
         self._status = None
-        self._model = None
+        self._device_model = device_model
 
     def setup(self):
         self._api.setup()
