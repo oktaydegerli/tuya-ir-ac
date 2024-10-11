@@ -73,7 +73,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     }
 )
 
-FAN_MODES = ['Auto', 'Low', 'Medium-Low', 'Medium', 'Medium-High', 'High', 'Turbo', 'Quiet']
+FAN_MODES = ['Otomatik', 'Sessiz', 'Düşük', 'Orta', 'Yüksek', 'En Yüksek']
 
 async def async_setup_platform(
         hass: HomeAssistantType,
@@ -325,29 +325,23 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
         fan_speed = None
 
-        if fan_mode == 'Auto':
+        if fan_mode == 'Otomatik':
+            fan_speed = 'auto'
+
+        if fan_mode == 'Sessiz':
+            fan_speed = 'quiet'
+
+        if fan_mode == 'Düşük':
             fan_speed = 'low'
 
-        if fan_mode == 'Low':
+        if fan_mode == 'Orta':
             fan_speed = 'medium'
 
-        if fan_mode == 'Medium-Low':
+        if fan_mode == 'Yüksek':
             fan_speed = 'high'
 
-        if fan_mode == 'Medium':
-            fan_speed = 'auto'
-
-        if fan_mode == 'Medium-High':
-            fan_speed = 'auto'
-
-        if fan_mode == 'High':
-            fan_speed = 'auto'
-
-        if fan_mode == 'Turbo':
-            fan_speed = 'auto'
-
-        if fan_mode == 'Quiet':
-            fan_speed = 'auto'                      
+        if fan_mode == 'En Yüksek':
+            fan_speed = 'highest'                    
 
         if fan_speed is None:
             _LOGGER.warning("Unsupported fan_mode: " + fan_mode)

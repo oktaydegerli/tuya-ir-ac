@@ -33,8 +33,8 @@ class ACState:
 
     @fan_speed.setter
     def fan_speed(self, value):
-        if value not in ['low', 'medium', 'high', 'auto']:
-            raise ValueError('fan speed must be one of low, medium, high or auto and instead got ' + value)
+        if value not in ['auto', 'quiet', 'low', 'medium', 'high', 'highest']:
+            raise ValueError('fan speed must be one of auto, quiet, low, medium, high or highest and instead got ' + value)
 
         self._fan_speed = value
 

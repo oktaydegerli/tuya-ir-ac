@@ -52,13 +52,10 @@ class IRApi:
             logger.error(msg)
             raise Exception(msg)
 
-        if fan_speed not in ['low', 'medium', 'high', 'auto']:
-            msg = 'fan speed must be one of low, medium, high or auto and instead got ' + fan_speed
+        if fan_speed not in ['auto', 'quiet', 'low', 'medium', 'high', 'highest']:
+            msg = 'fan speed must be one of auto, quiet, low, medium, high or highest and instead got ' + fan_speed
             logger.error(msg)
             raise Exception(msg)
-
-        if mode == 'dry':
-            fan_speed = 'low'
 
         if mode == "off":
             key_id = ir_commands["off"]
