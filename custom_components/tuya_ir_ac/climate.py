@@ -14,7 +14,7 @@ from homeassistant.const import (
     ATTR_TEMPERATURE,
     CONF_PASSWORD,
     CONF_USERNAME,
-    TEMP_CELSIUS,
+    UnitOfTemperature,
 )
 from homeassistant.components.climate import (
     ClimateEntity,
@@ -36,11 +36,8 @@ from homeassistant.components.climate.const import (
     HVAC_MODE_OFF,
     HVAC_MODE_COOL,
     HVAC_MODE_FAN_ONLY,
-    HVAC_MODE_DRY,
-    HVAC_MODE_HEAT,
-    HVAC_MODE_HEAT_COOL,
-    SUPPORT_TARGET_TEMPERATURE,
-    SUPPORT_FAN_MODE
+    HVACMode,
+    ClimateEntityFeature,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -168,7 +165,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     @property
     def temperature_unit(self):
         """Return the unit of measurement."""
-        return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     @property
     def current_temperature(self):
@@ -203,9 +200,9 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         "OFF": HVAC_MODE_OFF,
         "COOL": HVAC_MODE_COOL,
         "FAN": HVAC_MODE_FAN_ONLY,
-        "DRY": HVAC_MODE_DRY,
-        "HEAT": HVAC_MODE_HEAT,
-        "AUTO": HVAC_MODE_HEAT_COOL,
+        "DRY": HVACMode.DRY,
+        "HEAT": HVACMode.HEAT,
+        "AUTO": HVACMode.HEAT_COOL,
     }
 
     HVAC_MODE_MAPPING_INV = {v: k for k, v in HVAC_MODE_MAPPING.items()}
@@ -224,11 +221,11 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
         if self._state.mode == 'heat':
             _LOGGER.debug(f"hvac_mode: ac is heat")
-            return HVAC_MODE_HEAT
+            return HVACMode.HEAT
 
         if self._state.mode == 'auto':
             _LOGGER.debug(f"hvac_mode: ac is auto")
-            return HVAC_MODE_HEAT_COOL
+            return HVACMode.HEAT_COOL
 
         if self._state.mode == 'fan':
             _LOGGER.debug(f"hvac_mode: ac is fan")
@@ -236,7 +233,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
         if self._state.mode == 'dry':
             _LOGGER.debug(f"hvac_mode: ac is dry")
-            return HVAC_MODE_DRY
+            return HVACMode.DRY
 
         else:
             _LOGGER.warning(f"hvac_mode: unknown mode: " + self._state.mode)
@@ -251,9 +248,9 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             HVAC_MODE_OFF,
             HVAC_MODE_COOL,
             HVAC_MODE_FAN_ONLY,
-            HVAC_MODE_DRY,
-            HVAC_MODE_HEAT,
-            HVAC_MODE_HEAT_COOL,
+            HVACMode.DRY,
+            HVACMode.HEAT,
+            HVACMode.HEAT_COOL,
         ]
 
     @property
@@ -267,7 +264,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     @property
     def supported_features(self):
         """Return the list of supported features."""
-        return SUPPORT_TARGET_TEMPERATURE | SUPPORT_FAN_MODE
+        return ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.FAN_MODE
 
     # actions
 
@@ -297,11 +294,11 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             _LOGGER.debug(f"set_hvac_mode: ac is cool")
             ac_mode = 'cool'
 
-        if hvac_mode == HVAC_MODE_HEAT:
+        if hvac_mode == HVACMode.HEAT:
             _LOGGER.debug(f"set_hvac_mode: ac is heat")
             ac_mode = 'heat'
 
-        if hvac_mode == HVAC_MODE_HEAT_COOL:
+        if hvac_mode == HVACMode.HEAT_COOL:
             _LOGGER.debug(f"set_hvac_mode: ac is auto")
             ac_mode = 'auto'
 
@@ -309,7 +306,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             _LOGGER.debug(f"set_hvac_mode: ac is fan")
             ac_mode = 'fan'
 
-        if hvac_mode == HVAC_MODE_DRY:
+        if hvac_mode == HVACMode.DRY:
             _LOGGER.debug(f"set_hvac_mode: ac is dry")
             ac_mode = 'dry'
 
