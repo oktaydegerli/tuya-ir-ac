@@ -1,5 +1,4 @@
 import asyncio
-import time
 import logging
 from contextlib import contextmanager
 import homeassistant.helpers.config_validation as cv
@@ -10,28 +9,9 @@ from typing import Any, Callable, Dict, Optional
 from .ac_state import ACState
 from .client import AC
 
-from homeassistant.const import (
-    ATTR_TEMPERATURE,
-    CONF_PASSWORD,
-    CONF_USERNAME,
-    UnitOfTemperature,
-)
-from homeassistant.components.climate import (
-    ClimateEntity,
-    PLATFORM_SCHEMA,
-)
-
-from homeassistant.helpers.typing import (
-    ConfigType,
-    DiscoveryInfoType,
-    HomeAssistantType,
-)
-
-from homeassistant.components.climate.const import (
-    HVACAction,
-    HVACMode,
-    ClimateEntityFeature,
-)
+from homeassistant.const import (ATTR_TEMPERATURE, UnitOfTemperature)
+from homeassistant.components.climate import (ClimateEntity, PLATFORM_SCHEMA)
+from homeassistant.components.climate.const import (HVACAction, HVACMode, ClimateEntityFeature)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -67,12 +47,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 FAN_MODES = ['Otomatik', 'Sessiz', 'Düşük', 'Orta', 'Yüksek', 'En Yüksek']
 
-async def async_setup_platform(
-        hass: HomeAssistantType,
-        config: ConfigType,
-        async_add_entities: Callable,
-        discovery_info: Optional[DiscoveryInfoType] = None,
-) -> None:
+async def async_setup_platform(hass, config, async_add_entities: Callable, discovery_info = None) -> None:
     # Note: since this is a global thing, if at least one entity activates it, it's on
     """Set up the TuyaIRAC platform."""
     _LOGGER.debug("Setting up the TuyaIRAC climate platform conf: %s", config)
