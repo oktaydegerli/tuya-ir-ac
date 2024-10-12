@@ -349,6 +349,8 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         if fan_speed is None:
             _LOGGER.warning("Unsupported fan_mode: " + fan_mode)
             return
+        
+        self._fan_mode = fan_mode
 
         _LOGGER.debug(f"setting fan mode to {fan_mode} (fan_speed {fan_speed})")
         with self._act_and_update():
