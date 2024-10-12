@@ -71,7 +71,7 @@ class IRApi:
             else:
                 key_id = ir_commands2["off"]
         else: 
-            if self._device_model == 'MSC-GE35VB':
+            if self._device_model == 'MSZ-GE25VA':
                 key_id = ir_commands1[mode][fan_speed][str(temp)]
             else:
                 key_id = ir_commands2[mode][fan_speed][str(temp)]
