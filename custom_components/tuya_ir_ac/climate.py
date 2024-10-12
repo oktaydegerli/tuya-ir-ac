@@ -9,30 +9,13 @@ from typing import Any, Callable, Dict, Optional
 from .ac_state import ACState
 from .client import AC
 
-from homeassistant.const import (
-    ATTR_TEMPERATURE,
-    UnitOfTemperature,
-)
-from homeassistant.components.climate import (
-    ClimateEntity,
-    PLATFORM_SCHEMA,
-)
-
-from homeassistant.helpers.typing import (
-    ConfigType,
-    DiscoveryInfoType,
-    HomeAssistantType,
-)
-
-from homeassistant.components.climate.const import (
-    HVACAction,
-    HVACMode,
-    ClimateEntityFeature,
-)
+from homeassistant.const import (ATTR_TEMPERATURE, UnitOfTemperature)
+from homeassistant.components.climate import (ClimateEntity, PLATFORM_SCHEMA)
+from homeassistant.helpers.typing import (ConfigType, DiscoveryInfoType, HomeAssistantType)
+from homeassistant.components.climate.const import (HVACAction, HVACMode, ClimateEntityFeature)
 
 _LOGGER = logging.getLogger(__name__)
 
-# CONF_AC_ID = "id"
 CONF_ACS = "acs"
 CONF_AC_NAME = "name"
 CONF_AC_TUYA_IR_DEVICE_ID = "tuya_ir_device_id"
@@ -42,8 +25,6 @@ CONF_AC_TUYA_DEVICE_VERSION = "tuya_device_version"
 CONF_AC_TUYA_DEVICE_MODEL = "tuya_device_model"
 
 DEFAULT_NAME = "TuyaIRAC"
-print("")
-
 
 AC_SCHEMA = vol.Schema(
     {
