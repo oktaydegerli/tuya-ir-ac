@@ -1,5 +1,4 @@
 import asyncio
-import time
 import logging
 from contextlib import contextmanager
 import homeassistant.helpers.config_validation as cv
@@ -12,8 +11,6 @@ from .client import AC
 
 from homeassistant.const import (
     ATTR_TEMPERATURE,
-    CONF_PASSWORD,
-    CONF_USERNAME,
     UnitOfTemperature,
 )
 from homeassistant.components.climate import (
@@ -24,16 +21,13 @@ from homeassistant.components.climate import (
 from homeassistant.helpers.typing import (
     ConfigType,
     DiscoveryInfoType,
+    HomeAssistantType,
 )
 
 from homeassistant.components.climate.const import (
     HVACAction,
     HVACMode,
     ClimateEntityFeature,
-)
-
-from homeassistant.core import (
-    HomeAssistantType
 )
 
 _LOGGER = logging.getLogger(__name__)
