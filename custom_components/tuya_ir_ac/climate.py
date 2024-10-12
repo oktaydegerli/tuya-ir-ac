@@ -28,9 +28,6 @@ from homeassistant.helpers.typing import (
 )
 
 from homeassistant.components.climate.const import (
-    CURRENT_HVAC_OFF,
-    CURRENT_HVAC_IDLE,
-    CURRENT_HVAC_COOL,
     HVACAction,
     HVACMode,
     ClimateEntityFeature,
@@ -190,7 +187,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     def target_temperature_step(self):
         return 1
 
-    MODE_BY_NAME = {"IDLE": CURRENT_HVAC_IDLE}
+    MODE_BY_NAME = {"IDLE": HVACAction.IDLE}
 
     HVAC_MODE_MAPPING = {
         "OFF": HVACMode.OFF,
