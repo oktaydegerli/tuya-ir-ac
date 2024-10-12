@@ -24,13 +24,16 @@ from homeassistant.components.climate import (
 from homeassistant.helpers.typing import (
     ConfigType,
     DiscoveryInfoType,
-    HomeAssistantType,
 )
 
 from homeassistant.components.climate.const import (
     HVACAction,
     HVACMode,
     ClimateEntityFeature,
+)
+
+from homeassistant.core import (
+    HomeAssistantType
 )
 
 _LOGGER = logging.getLogger(__name__)
