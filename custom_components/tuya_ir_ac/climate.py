@@ -31,11 +31,7 @@ from homeassistant.components.climate.const import (
     CURRENT_HVAC_OFF,
     CURRENT_HVAC_IDLE,
     CURRENT_HVAC_COOL,
-    CURRENT_HVAC_HEAT,
-    CURRENT_HVAC_DRY,
-    HVAC_MODE_OFF,
-    HVAC_MODE_COOL,
-    HVAC_MODE_FAN_ONLY,
+    HVACAction,
     HVACMode,
     ClimateEntityFeature,
 )
@@ -197,9 +193,9 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     MODE_BY_NAME = {"IDLE": CURRENT_HVAC_IDLE}
 
     HVAC_MODE_MAPPING = {
-        "OFF": HVAC_MODE_OFF,
-        "COOL": HVAC_MODE_COOL,
-        "FAN": HVAC_MODE_FAN_ONLY,
+        "OFF": HVACMode.OFF,
+        "COOL": HVACMode.COOL,
+        "FAN": HVACMode.FAN_ONLY,
         "DRY": HVACMode.DRY,
         "HEAT": HVACMode.HEAT,
         "AUTO": HVACMode.HEAT_COOL,
@@ -213,11 +209,11 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         
         if self._state.mode == 'off':
             _LOGGER.debug(f"hvac_mode: ac is off")
-            return HVAC_MODE_OFF
+            return HVACMode.OFF
 
         if self._state.mode == 'cool':
             _LOGGER.debug(f"hvac_mode: ac is cool")
-            return HVAC_MODE_COOL
+            return HVACMode.COOL
 
         if self._state.mode == 'heat':
             _LOGGER.debug(f"hvac_mode: ac is heat")
@@ -229,7 +225,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
         if self._state.mode == 'fan':
             _LOGGER.debug(f"hvac_mode: ac is fan")
-            return HVAC_MODE_FAN_ONLY
+            return HVACMode.FAN_ONLY
 
         if self._state.mode == 'dry':
             _LOGGER.debug(f"hvac_mode: ac is dry")
@@ -239,15 +235,15 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             _LOGGER.warning(f"hvac_mode: unknown mode: " + self._state.mode)
 
             # Not returning off as if it's on then we would be completely off
-            return HVAC_MODE_OFF
+            return HVACMode.OFF
 
     @property
     def hvac_modes(self):
         """HVAC modes."""
         return [
-            HVAC_MODE_OFF,
-            HVAC_MODE_COOL,
-            HVAC_MODE_FAN_ONLY,
+            HVACMode.OFF,
+            HVACMode.COOL,
+            HVACMode.FAN_ONLY,
             HVACMode.DRY,
             HVACMode.HEAT,
             HVACMode.HEAT_COOL,
@@ -286,11 +282,11 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
         ac_mode = None
 
-        if hvac_mode == HVAC_MODE_OFF:
+        if hvac_mode == HVACMode.OFF:
             _LOGGER.debug(f"set_hvac_mode: ac is cool")
             ac_mode = 'off'
 
-        if hvac_mode == HVAC_MODE_COOL:
+        if hvac_mode == HVACMode.COOL:
             _LOGGER.debug(f"set_hvac_mode: ac is cool")
             ac_mode = 'cool'
 
@@ -302,7 +298,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             _LOGGER.debug(f"set_hvac_mode: ac is auto")
             ac_mode = 'auto'
 
-        if hvac_mode == HVAC_MODE_FAN_ONLY:
+        if hvac_mode == HVACMode.FAN_ONLY:
             _LOGGER.debug(f"set_hvac_mode: ac is fan")
             ac_mode = 'fan'
 
