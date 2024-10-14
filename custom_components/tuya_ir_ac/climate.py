@@ -3,19 +3,17 @@ import logging
 from contextlib import contextmanager
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.restore_state import RestoreEntity
-from typing import Any, Callable, Dict, Optional
+from typing import Callable
 from .ac_state import ACState
 from .client import AC
 
 from homeassistant.const import (ATTR_TEMPERATURE, UnitOfTemperature)
 from homeassistant.components.climate import (ClimateEntity, PLATFORM_SCHEMA)
-from homeassistant.components.climate.const import (HVACAction, HVACMode, ClimateEntityFeature)
+from homeassistant.components.climate.const import (HVACMode, ClimateEntityFeature)
 
 _LOGGER = logging.getLogger(__name__)
 
-# CONF_AC_ID = "id"
 CONF_ACS = "acs"
 CONF_AC_NAME = "name"
 CONF_AC_TUYA_IR_DEVICE_ID = "tuya_ir_device_id"
@@ -25,8 +23,6 @@ CONF_AC_TUYA_DEVICE_VERSION = "tuya_device_version"
 CONF_AC_TUYA_DEVICE_MODEL = "tuya_device_model"
 
 DEFAULT_NAME = "TuyaIRAC"
-print("")
-
 
 AC_SCHEMA = vol.Schema(
     {
@@ -48,10 +44,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 FAN_MODES = ['Otomatik', 'Sessiz', 'Düşük', 'Orta', 'Yüksek', 'En Yüksek']
 
 async def async_setup_platform(hass, config, async_add_entities: Callable, discovery_info = None) -> None:
-    # Note: since this is a global thing, if at least one entity activates it, it's on
-    """Set up the TuyaIRAC platform."""
-    _LOGGER.debug("Setting up the TuyaIRAC climate platform conf: %s", config)
-    session = async_get_clientsession(hass)
 
     fan_modes = FAN_MODES
 
@@ -65,7 +57,6 @@ async def async_setup_platform(hass, config, async_add_entities: Callable, disco
 
 class TuyaIRAC(RestoreEntity, ClimateEntity):
     def __init__(self, hass, ac_conf, fan_modes):
-        """Initialize the tuya_ir_ac."""
         _LOGGER.info("Initializing TuyaIRAC", ac_conf)
         self._name = ac_conf[CONF_AC_NAME]
         self._hass = hass
@@ -83,7 +74,6 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
 
     async def async_added_to_hass(self):
-        """Set up the tuya_ir_ac."""
         await super().async_added_to_hass()
 
         _LOGGER.info("Setting up TuyaIRAC")
@@ -97,7 +87,6 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     @property
     def extra_state_attributes(self):
-        """Return the state attributes."""
         return {
             "internal_mode": self._state.mode,
             "internal_fan_speed": self._state.fan_speed,
@@ -112,32 +101,26 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     @property
     def unique_id(self) -> str:
-        """Return the unique ID for this device."""
         return f"climate {self._name}"
 
     @property
     def should_poll(self):
-        """Return if polling is required."""
         return False
 
     @property
     def min_temp(self):
-        """Return the minimum temperature."""
         return 16
 
     @property
     def max_temp(self):
-        """Return the maximum temperature."""
         return 31
 
     @property
     def temperature_unit(self):
-        """Return the unit of measurement."""
         return UnitOfTemperature.CELSIUS
 
     @property
     def current_temperature(self):
-        """Return the current temperature."""
         value = self._state.temp
         if value is not None:
             value = int(value)
@@ -146,8 +129,6 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     @property
     def target_temperature(self):
-        """Return the temperature we try to reach."""
-
         if self._state.mode == 'off':
             _LOGGER.debug(f"target_temperature: ac is off")
             return None
@@ -162,23 +143,8 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     def target_temperature_step(self):
         return 1
 
-    MODE_BY_NAME = {"IDLE": HVACAction.IDLE}
-
-    HVAC_MODE_MAPPING = {
-        "OFF": HVACMode.OFF,
-        "COOL": HVACMode.COOL,
-        "FAN": HVACMode.FAN_ONLY,
-        "DRY": HVACMode.DRY,
-        "HEAT": HVACMode.HEAT,
-        "AUTO": HVACMode.HEAT_COOL,
-    }
-
-    HVAC_MODE_MAPPING_INV = {v: k for k, v in HVAC_MODE_MAPPING.items()}
-
     @property
     def hvac_mode(self):
-        """Return hvac operation ie. heat, cool mode."""
-        
         if self._state.mode == 'off':
             _LOGGER.debug(f"hvac_mode: ac is off")
             return HVACMode.OFF
@@ -205,13 +171,10 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
         else:
             _LOGGER.warning(f"hvac_mode: unknown mode: " + self._state.mode)
-
-            # Not returning off as if it's on then we would be completely off
             return HVACMode.OFF
 
     @property
     def hvac_modes(self):
-        """HVAC modes."""
         return [
             HVACMode.OFF,
             HVACMode.COOL,
@@ -231,13 +194,9 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     @property
     def supported_features(self):
-        """Return the list of supported features."""
         return ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.FAN_MODE
 
-    # actions
-
     def set_temperature(self, **kwargs):
-        """Set new target temperature."""
         temperature = kwargs.get(ATTR_TEMPERATURE)
         _LOGGER.debug(f"setting new temperature to {temperature}")
         if temperature is None:
@@ -330,7 +289,5 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             self.async_update_ha_state(), self._hass.loop
         )
 
-    # data fetch mechanism
     def update(self):
-        """Get the latest data."""
         _LOGGER.debug("not doing anything, should I even use it?")
