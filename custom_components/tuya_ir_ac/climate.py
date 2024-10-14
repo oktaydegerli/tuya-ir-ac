@@ -51,7 +51,6 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         self._fan_mode = "Düşük"
         self._hvac_mode = HVACMode.OFF
         self._temp = 25
-        self._unique_id = 'climate.tuya_ir_ac_' + device_ip.decode('utf-8').lower()
         self._mutex = Lock()
         self._api = IRApi(device_id, local_key, device_ip, device_version, device_model)
 
@@ -91,9 +90,8 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         return self._name
 
     @property
-    def unique_id(self):
-        # Return unique_id
-        return self._unique_id
+    def unique_id(self) -> str:
+        return f"climate {self._name}"
 
     @property
     def should_poll(self):
