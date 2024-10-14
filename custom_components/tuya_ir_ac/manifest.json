@@ -1,13 +1,9 @@
 {
   "domain": "tuya_ir_ac",
   "name": "Tuya IR remote control for air conditioners",
-  "dependencies": [],
-  "codeowners": [
-    "@oktaydegerli"
-  ],
-  "requirements": [
-    "tinytuya~=1.10.3",
-    "json5~=0.9.14"
-  ],
-  "version": "1.1.7"
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": ["sensor", "switch"],
+  "integration_type": "helper",
+  "iot_class": "local_polling"
 }
