@@ -1,9 +1,9 @@
 {
-    "title": "Generic thermostat",
+    "title": "Tuya IR Remote Control AC",
     "config": {
       "step": {
         "user": {
-          "title": "Add generic thermostat helper",
+          "title": "Add helper",
           "description": "Create a climate entity that controls the temperature via a switch and sensor.",
           "data": {
             "ac_mode": "Cooling mode",
@@ -72,7 +72,7 @@
     "services": {
       "reload": {
         "name": "[%key:common::action::reload%]",
-        "description": "Reloads generic thermostats from the YAML-configuration."
+        "description": "Reloads devices from the YAML-configuration."
       }
     }
   }

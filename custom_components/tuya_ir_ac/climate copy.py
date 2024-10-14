@@ -65,7 +65,7 @@ async def async_setup_platform(hass, config, async_add_entities: Callable, disco
 
 class TuyaIRAC(RestoreEntity, ClimateEntity):
     def __init__(self, hass, ac_conf, fan_modes):
-        """Initialize the thermostat."""
+        """Initialize the tuya_ir_ac."""
         _LOGGER.info("Initializing TuyaIRAC", ac_conf)
         self._name = ac_conf[CONF_AC_NAME]
         self._hass = hass
@@ -83,7 +83,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
 
     async def async_added_to_hass(self):
-        """Set up the thermostat."""
+        """Set up the tuya_ir_ac."""
         await super().async_added_to_hass()
 
         _LOGGER.info("Setting up TuyaIRAC")
@@ -112,7 +112,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     @property
     def unique_id(self) -> str:
-        """Return the unique ID for this thermostat."""
+        """Return the unique ID for this device."""
         return f"climate {self._name}"
 
     @property

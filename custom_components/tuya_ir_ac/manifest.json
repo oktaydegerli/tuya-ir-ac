@@ -1,6 +1,6 @@
 {
   "domain": "tuya_ir_ac",
-  "name": "Tuya IR remote control for air conditioners",
+  "name": "Tuya IR Remote Control AC",
   "codeowners": [],
   "config_flow": true,
   "dependencies": ["sensor", "switch"],

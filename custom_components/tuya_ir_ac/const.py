@@ -1,4 +1,4 @@
-"""Constants for the Generic Thermostat helper."""
+"""Constants for the helper."""
 
 from homeassistant.components.climate import (
     PRESET_ACTIVITY,

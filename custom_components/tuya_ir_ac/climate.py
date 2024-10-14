@@ -1,4 +1,4 @@
-"""Adds support for generic thermostat units."""
+"""Adds support for air conditioner units."""
 
 from __future__ import annotations
 
@@ -73,7 +73,7 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-DEFAULT_NAME = "Generic Thermostat"
+DEFAULT_NAME = "Tuya IR Remote Control AC"
 
 CONF_INITIAL_HVAC_MODE = "initial_hvac_mode"
 CONF_KEEP_ALIVE = "keep_alive"
@@ -140,7 +140,7 @@ async def async_setup_platform(
     async_add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
-    """Set up the generic thermostat platform."""
+    """Set up the platform."""
 
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
     await _async_setup_config(
@@ -154,7 +154,7 @@ async def _async_setup_config(
     unique_id: str | None,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the generic thermostat platform."""
+    """Set up the platform."""
 
     name: str = config[CONF_NAME]
     heater_entity_id: str = config[CONF_HEATER]
@@ -177,7 +177,7 @@ async def _async_setup_config(
 
     async_add_entities(
         [
-            GenericThermostat(
+            TuyaIRAC(
                 hass,
                 name,
                 heater_entity_id,
@@ -201,8 +201,8 @@ async def _async_setup_config(
     )
 
 
-class GenericThermostat(ClimateEntity, RestoreEntity):
-    """Representation of a Generic Thermostat device."""
+class TuyaIRAC(ClimateEntity, RestoreEntity):
+    """Representation of device."""
 
     _attr_should_poll = False
     _enable_turn_on_off_backwards_compatibility = False
@@ -228,7 +228,7 @@ class GenericThermostat(ClimateEntity, RestoreEntity):
         unit: UnitOfTemperature,
         unique_id: str | None,
     ) -> None:
-        """Initialize the thermostat."""
+        """Initialize the tuya_ir_ac."""
         self._attr_name = name
         self.heater_entity_id = heater_entity_id
         self.sensor_entity_id = sensor_entity_id
@@ -481,7 +481,7 @@ class GenericThermostat(ClimateEntity, RestoreEntity):
 
     @callback
     def _async_update_temp(self, state: State) -> None:
-        """Update thermostat with latest state from sensor."""
+        """Update tuya_ir_ac with latest state from sensor."""
         try:
             cur_temp = float(state.state)
             if not math.isfinite(cur_temp):
@@ -503,7 +503,7 @@ class GenericThermostat(ClimateEntity, RestoreEntity):
                 _LOGGER.debug(
                     (
                         "Obtained current and target temperature. "
-                        "Generic thermostat active. %s, %s"
+                        "Device active. %s, %s"
                     ),
                     self._cur_temp,
                     self._target_temp,
