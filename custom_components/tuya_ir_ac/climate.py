@@ -56,9 +56,8 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     def __init__(self, hass, name, device_id, local_key, device_ip, device_version, device_model):
         self._name = name
         self._hass = hass
-        self._fan_mode = None
-        self._fan_speed = 'medium'        
-        self._hvac_mode = 'off'
+        self._fan_mode = "Düşük"
+        self._hvac_mode = HVACMode.OFF
         self._temp = 25
         self._mutex = Lock()
         self._api = IRApi(device_id, local_key, device_ip, device_version, device_model)
@@ -72,28 +71,25 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         prev = await self.async_get_last_state()
         
         if prev:
-            
-            self.mode = prev.attributes.get("internal_mode", None)
-
+            self.hvac_mode = prev.attributes.get("internal_mode", None)
             self.temp = prev.attributes.get("internal_temp", None)
+            self.fan_mode = prev.attributes.get("internal_fan_mode", None)
 
-            self.fan_speed = prev.attributes.get("internal_fan_speed", None)
-
-            if self.mode is None:
-                self.mode = 'off'
+            if self.hvac_mode is None:
+                self.hvac_mode = HVACMode.OFF
 
             if self.temp is None:
                 self.temp = 25
 
-            if self.fan_speed is None:
-                self.fan_speed = 'medium'
+            if self.fan_mode is None:
+                self.fan_mode = 'Düşük'
 
 
     @property
     def extra_state_attributes(self):
         return {
-            "internal_mode": self.mode,
-            "internal_fan_speed": self.fan_speed,
+            "internal_mode": self.hvac_mode,
+            "internal_fan_mode": self.fan_mode,
             "internal_temp": self.temp,
         }
 
@@ -130,7 +126,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     @property
     def target_temperature(self):
-        if self.mode == 'off':
+        if self.hvac_mode == HVACMode.OFF:
             return None
 
         value = self.temp
@@ -144,26 +140,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     @property
     def hvac_mode(self):
-        if self.mode == 'off':
-            return HVACMode.OFF
-
-        if self.mode == 'cool':
-            return HVACMode.COOL
-
-        if self.mode == 'heat':
-            return HVACMode.HEAT
-
-        if self.mode == 'auto':
-            return HVACMode.HEAT_COOL
-
-        if self.mode == 'fan':
-            return HVACMode.FAN_ONLY
-
-        if self.mode == 'dry':
-            return HVACMode.DRY
-
-        else:
-            return HVACMode.OFF
+        return self.hvac_mode
 
     @property
     def hvac_modes(self):
@@ -202,74 +179,24 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     def _update_temp_critical(self, temperature):
         self.temp = int(temperature)
-        self._api.set_state(self.mode, self.temp, self.fan_speed)
+        self._api.set_state(self.hvac_mode, self.temp, self.fan_mode)
 
 
     def set_hvac_mode(self, hvac_mode):
-
-        ac_mode = None
-
-        if hvac_mode == HVACMode.OFF:
-            ac_mode = 'off'
-
-        if hvac_mode == HVACMode.COOL:
-            ac_mode = 'cool'
-
-        if hvac_mode == HVACMode.HEAT:
-            ac_mode = 'heat'
-
-        if hvac_mode == HVACMode.HEAT_COOL:
-            ac_mode = 'auto'
-
-        if hvac_mode == HVACMode.FAN_ONLY:
-            ac_mode = 'fan'
-
-        if hvac_mode == HVACMode.DRY:
-            ac_mode = 'dry'
-
-        if ac_mode is None:
-            return
-
         with self._act_and_update():
-            self.run_with_lock(lambda: self._update_mode_critical(ac_mode))
+            self.run_with_lock(lambda: self._update_mode_critical(hvac_mode))
 
-    def _update_mode_critical(self, ac_mode):
-        self.mode = ac_mode
-        self._api.set_state(self.mode, self.temp, self.fan_speed)
+    def _update_mode_critical(self, hvac_mode):
+        self.hvac_mode = hvac_mode
+        self._api.set_state(self.hvac_mode, self.temp, self.fan_mode)
 
     def set_fan_mode(self, fan_mode):
-
-        fan_speed = None
-
-        if fan_mode == 'Otomatik':
-            fan_speed = 'auto'
-
-        if fan_mode == 'Sessiz':
-            fan_speed = 'quiet'
-
-        if fan_mode == 'Düşük':
-            fan_speed = 'low'
-
-        if fan_mode == 'Orta':
-            fan_speed = 'medium'
-
-        if fan_mode == 'Yüksek':
-            fan_speed = 'high'
-
-        if fan_mode == 'En Yüksek':
-            fan_speed = 'highest'                    
-
-        if fan_speed is None:
-            return
-        
-        self._fan_mode = fan_mode
-
         with self._act_and_update():
-            self.run_with_lock(lambda: self._update_fan_speed_critical(fan_speed))
+            self.run_with_lock(lambda: self._update_fan_mode_critical(fan_mode))
 
-    def _update_fan_speed_critical(self, fan_speed):
-        self.fan_speed = fan_speed
-        self._api.set_state(self.mode, self.temp, self.fan_speed)
+    def _update_fan_mode_critical(self, fan_mode):
+        self.fan_mode = fan_mode
+        self._api.set_state(self.hvac_mode, self.temp, self.fan_mode)
 
 
     @contextmanager
