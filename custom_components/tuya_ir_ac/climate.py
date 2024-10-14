@@ -37,44 +37,31 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     }
 )
 
-HVAC_MODES = [HVACMode.AUTO, HVACMode.COOL, HVACMode.DRY, HVACMode.FAN_ONLY, HVACMode.HEAT, HVACMode.OFF]
+async def async_setup_platform(hass, config, async_add_devices, discovery_info = None):
 
-FAN_MODES = ['Otomatik', 'Sessiz', 'Düşük', 'Orta', 'Yüksek', 'En Yüksek']
+    name = config.get(CONF_AC_NAME)
+    device_id = config.get(CONF_AC_TUYA_IR_DEVICE_ID)
+    local_key = config.get(CONF_AC_TUYA_DEVICE_LOCAL_KEY)
+    device_ip = config.get(CONF_AC_TUYA_DEVICE_IP)
+    device_version = config.get(CONF_AC_TUYA_DEVICE_VERSION)
+    device_model = config.get(CONF_AC_TUYA_DEVICE_MODEL)
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info = None):
-
-    acs = [
-        TuyaIRAC(hass, ac, FAN_MODES)
-        for ac in config.get(CONF_ACS)
-    ]
-
-    async_add_entities(acs, update_before_add=True)
+    async_add_devices([
+        TuyaIRAC(hass, name, device_id, local_key, device_ip, device_version, device_model)
+    ])
 
 
 class TuyaIRAC(RestoreEntity, ClimateEntity):
     
-    def __init__(self, hass, ac_conf, fan_modes):
-        
-        self._name = ac_conf[CONF_AC_NAME]
+    def __init__(self, hass, name, device_id, local_key, device_ip, device_version, device_model):
+        self._name = name
         self._hass = hass
-        self._hvac_modes = HVAC_MODES
-        self._fan_modes = fan_modes
         self._fan_mode = None
         self._fan_speed = 'medium'        
         self._hvac_mode = 'off'
         self._temp = 25
-
-        self._api = IRApi(
-            ac_conf[CONF_AC_TUYA_IR_DEVICE_ID],
-            ac_conf[CONF_AC_TUYA_DEVICE_LOCAL_KEY],
-            ac_conf[CONF_AC_TUYA_DEVICE_IP],
-            ac_conf[CONF_AC_TUYA_DEVICE_VERSION],
-            ac_conf[CONF_AC_TUYA_DEVICE_MODEL]
-        )
-
         self._mutex = Lock()
-
-
+        self._api = IRApi(device_id, local_key, device_ip, device_version, device_model)
 
     async def async_added_to_hass(self):
         
@@ -188,7 +175,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     @property
     def fan_modes(self):
-        return self._fan_modes
+        return ['Otomatik', 'Sessiz', 'Düşük', 'Orta', 'Yüksek', 'En Yüksek']
 
     @property
     def supported_features(self):
