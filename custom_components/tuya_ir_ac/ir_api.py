@@ -21,17 +21,17 @@ with open(commands_path2, 'r') as f:
     ir_commands2 = json5.load(f)
 
 class IRApi:
-    def __init__(self, ir_device_id: str, device_local_key: str, device_ip: str, version: str = '3.3', device_model: str = 'MSZ-GE25VA'):
-        self.ir_device_id = ir_device_id
-        self.device_local_key = device_local_key
+    def __init__(self, device_id: str, local_key: str, device_ip: str, device_version: str, device_model: str):
+        self.ir_device_id = device_id
+        self.local_key = local_key
         self.device_ip = device_ip
-        self.version = float('3.3' if version is None else version)
+        self.device_version = float('3.3' if device_version is None else device_version)
         self._device_api = None
         self._device_model = device_model
 
     def setup(self):
-        self._device_api = tinytuya.Device(self.ir_device_id, self.device_ip, self.device_local_key)
-        self._device_api.set_version(self.version)
+        self._device_api = tinytuya.Device(self.ir_device_id, self.device_ip, self.local_key)
+        self._device_api.set_version(self.device_version)
 
     def set_state(self, hvac_mode, temperature, fan_mode):
 

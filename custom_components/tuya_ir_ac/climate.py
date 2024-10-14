@@ -53,7 +53,7 @@ async def async_setup_platform(hass, config, async_add_devices, discovery_info =
 
 class TuyaIRAC(RestoreEntity, ClimateEntity):
     
-    def __init__(self, hass, name, device_id, local_key, device_ip, device_version, device_model):
+    def __init__(self, hass, name, device_id: str, local_key: str, device_ip: str, device_version: str, device_model: str):
         self._name = name
         self._hass = hass
         self._fan_mode = "Düşük"
