@@ -48,8 +48,9 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     def __init__(self, hass, name, device_id: str, local_key: str, device_ip: str, device_version: str, device_model: str):
         self.hass = hass
         self._name = name
-        self._fan_mode = "Düşük"
+        self._is_on = False
         self._hvac_mode = HVACMode.OFF
+        self._fan_mode = "Düşük"
         self._temp = 25
         self._mutex = Lock()
         self._api = IRApi(device_id, local_key, device_ip, device_version, device_model)
@@ -148,7 +149,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     @property
     def supported_features(self):
-        return ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.FAN_MODE
+        return ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.FAN_MODE | ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF
 
 
     def run_with_lock(self, critical_section_fn):
@@ -158,6 +159,21 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         finally:
             self._mutex.release()
 
+    def turn_on(self): 
+        with self._act_and_update():
+            self.run_with_lock(lambda: self._turn_on_critical())
+
+    def _turn_on_critical(self):
+        self._is_on = True
+        self._api.set_state(self._is_on, self._hvac_mode, self._temp, self._fan_mode)
+
+    def turn_off(self): 
+        with self._act_and_update():
+            self.run_with_lock(lambda: self._turn_off_critical())
+
+    def _turn_off_critical(self):
+        self._is_on = False
+        self._api.set_state(self._is_on, self._hvac_mode, self._temp, self._fan_mode)
 
     def set_temperature(self, **kwargs):
         temperature = kwargs.get(ATTR_TEMPERATURE)
@@ -167,28 +183,28 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         if temperature < 16 or temperature > 31:
             return
         with self._act_and_update():
-            self.run_with_lock(lambda: self._update_temp_critical(temperature))
+            self.run_with_lock(lambda: self._set_temperature_critical(temperature))
 
-    def _update_temp_critical(self, temperature):
+    def _set_temperature_critical(self, temperature):
         self._temp = int(temperature)
-        self._api.set_state(self._hvac_mode, self._temp, self._fan_mode)
+        self._api.set_state(self._is_on, self._hvac_mode, self._temp, self._fan_mode)
 
 
     def set_hvac_mode(self, hvac_mode):
         with self._act_and_update():
-            self.run_with_lock(lambda: self._update_mode_critical(hvac_mode))
+            self.run_with_lock(lambda: self._set_hvac_mode_critical(hvac_mode))
 
-    def _update_mode_critical(self, hvac_mode):
+    def _set_hvac_mode_critical(self, hvac_mode):
         self._hvac_mode = hvac_mode
-        self._api.set_state(self._hvac_mode, self._temp, self._fan_mode)
+        self._api.set_state(self._is_on, self._hvac_mode, self._temp, self._fan_mode)
 
     def set_fan_mode(self, fan_mode):
         with self._act_and_update():
-            self.run_with_lock(lambda: self._update_fan_mode_critical(fan_mode))
+            self.run_with_lock(lambda: self._set_fan_mode_critical(fan_mode))
 
-    def _update_fan_mode_critical(self, fan_mode):
+    def _set_fan_mode_critical(self, fan_mode):
         self._fan_mode = fan_mode
-        self._api.set_state(self._hvac_mode, self._temp, self._fan_mode)
+        self._api.set_state(self._is_on, self._hvac_mode, self._temp, self._fan_mode)
 
 
     @contextmanager

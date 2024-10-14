@@ -33,9 +33,15 @@ class IRApi:
         self._device_api = tinytuya.Device(self._ir_device_id, self._device_ip, self._local_key)
         self._device_api.set_version(self._device_version)
 
-    def set_state(self, hvac_mode, temperature, fan_mode):
+    def set_state(self, is_on, hvac_mode, temperature, fan_mode):
 
         hvac_mode_key = None
+
+        if is_on == False:
+            hvac_mode_key = "off"
+
+        if is_on == True and (hvac_mode == HVACMode.OFF or hvac_mode == None):
+            hvac_mode = HVACMode.HEAT_COOL
 
         if hvac_mode == HVACMode.OFF:
             hvac_mode_key = "off"
