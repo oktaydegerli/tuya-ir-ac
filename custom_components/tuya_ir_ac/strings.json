@@ -40,24 +40,24 @@
       "step": {
         "init": {
           "data": {
-            "ac_mode": "[%key:component::tuya_ir_ac::config::step::user::data::ac_mode%]",
-            "heater": "[%key:component::tuya_ir_ac::config::step::user::data::heater%]",
-            "target_sensor": "[%key:component::tuya_ir_ac::config::step::user::data::target_sensor%]",
-            "min_cycle_duration": "[%key:component::tuya_ir_ac::config::step::user::data::min_cycle_duration%]",
-            "cold_tolerance": "[%key:component::tuya_ir_ac::config::step::user::data::cold_tolerance%]",
-            "hot_tolerance": "[%key:component::tuya_ir_ac::config::step::user::data::hot_tolerance%]"
+            "ac_mode": "[%key:component::generic_thermostat::config::step::user::data::ac_mode%]",
+            "heater": "[%key:component::generic_thermostat::config::step::user::data::heater%]",
+            "target_sensor": "[%key:component::generic_thermostat::config::step::user::data::target_sensor%]",
+            "min_cycle_duration": "[%key:component::generic_thermostat::config::step::user::data::min_cycle_duration%]",
+            "cold_tolerance": "[%key:component::generic_thermostat::config::step::user::data::cold_tolerance%]",
+            "hot_tolerance": "[%key:component::generic_thermostat::config::step::user::data::hot_tolerance%]"
           },
           "data_description": {
-            "heater": "[%key:component::tuya_ir_ac::config::step::user::data_description::heater%]",
-            "target_sensor": "[%key:component::tuya_ir_ac::config::step::user::data_description::target_sensor%]",
-            "ac_mode": "[%key:component::tuya_ir_ac::config::step::user::data_description::ac_mode%]",
-            "min_cycle_duration": "[%key:component::tuya_ir_ac::config::step::user::data_description::min_cycle_duration%]",
-            "cold_tolerance": "[%key:component::tuya_ir_ac::config::step::user::data_description::cold_tolerance%]",
-            "hot_tolerance": "[%key:component::tuya_ir_ac::config::step::user::data_description::hot_tolerance%]"
+            "heater": "[%key:component::generic_thermostat::config::step::user::data_description::heater%]",
+            "target_sensor": "[%key:component::generic_thermostat::config::step::user::data_description::target_sensor%]",
+            "ac_mode": "[%key:component::generic_thermostat::config::step::user::data_description::ac_mode%]",
+            "min_cycle_duration": "[%key:component::generic_thermostat::config::step::user::data_description::min_cycle_duration%]",
+            "cold_tolerance": "[%key:component::generic_thermostat::config::step::user::data_description::cold_tolerance%]",
+            "hot_tolerance": "[%key:component::generic_thermostat::config::step::user::data_description::hot_tolerance%]"
           }
         },
         "presets": {
-          "title": "[%key:component::tuya_ir_ac::config::step::presets::title%]",
+          "title": "[%key:component::generic_thermostat::config::step::presets::title%]",
           "data": {
             "away_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::away%]",
             "comfort_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::comfort%]",
