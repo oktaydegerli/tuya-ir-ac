@@ -47,6 +47,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     
     def __init__(self, hass, name, device_id: str, local_key: str, device_ip: str, device_version: str, device_model: str):
         self.hass = hass
+        self._enable_turn_on_off_backwards_compatibility = False
         self._name = name
         self._is_on = False
         self._hvac_mode = HVACMode.OFF
