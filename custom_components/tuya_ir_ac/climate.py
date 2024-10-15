@@ -45,11 +45,10 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._attr_current_temperature = 20
         self._attr_target_temperature = 22
         self._lock = threading.Lock()
-        self._device_api = None
+        self._setup_tuya()
 
-    def _setup_tuya(self): 
-        if self._device_api is None:
-            self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
+    async def _setup_tuya(self): 
+        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
 
     @property
     def unique_id(self) -> str:
@@ -133,9 +132,6 @@ class TuyaIrClimateEntity(ClimateEntity):
         await self._set_state()
 
     async def _set_state(self):
-
-        if self._device_api is None:
-            self._setup_tuya()
 
         self.async_write_ha_state()
 
