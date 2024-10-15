@@ -12,6 +12,16 @@ import threading
 
 _LOGGER = logging.getLogger(__name__)
 
+current_dir = os.path.dirname(__file__)
+commands_path1 = os.path.join(current_dir, './ac-commands-1.json5')
+commands_path2 = os.path.join(current_dir, './ac-commands-2.json5')
+
+with open(commands_path1, 'r') as f:
+    ir_codes1 = json5.load(f)
+
+with open(commands_path2, 'r') as f:
+    ir_codes2 = json5.load(f)
+
 async def async_setup_entry(hass, config_entry, async_add_entities):
     ac_name = config_entry.data.get(CONF_AC_NAME)
     device_id = config_entry.data.get(CONF_DEVICE_ID)
@@ -40,19 +50,6 @@ class TuyaIrClimateEntity(ClimateEntity):
 
     def _setup_tuya(self): 
         self._device_api = None
-        self._ir_codes1 = None
-        self._ir_codes2 = None
-
-        current_dir = os.path.dirname(__file__)
-        commands_path1 = os.path.join(current_dir, './ac-commands-1.json5')
-        commands_path2 = os.path.join(current_dir, './ac-commands-2.json5')
-
-        with open(commands_path1, 'r') as f:
-            self._ir_codes1 = json5.load(f)
-
-        with open(commands_path2, 'r') as f:
-            self._ir_codes2 = json5.load(f)
-
         self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
 
     @property
@@ -178,14 +175,14 @@ class TuyaIrClimateEntity(ClimateEntity):
 
         if hvac_mode_key == "off":
             if self._device_model == 'MSZ-GE25VA':
-                ir_code = self._ir_codes1["off"]
+                ir_code = ir_codes1["off"]
             else:
-                ir_code = self._ir_codes2["off"]
+                ir_code = ir_codes2["off"]
         else: 
             if self._device_model == 'MSZ-GE25VA':
-                ir_code = self._ir_codes1[hvac_mode_key][fan_mode_key][str(self._attr_target_temperature)]
+                ir_code = ir_codes1[hvac_mode_key][fan_mode_key][str(self._attr_target_temperature)]
             else:
-                ir_code = self._ir_codes2[hvac_mode_key][fan_mode_key][str(self._attr_target_temperature)]
+                ir_code = ir_codes2[hvac_mode_key][fan_mode_key][str(self._attr_target_temperature)]
 
         b64 = codecs.encode(codecs.decode(ir_code, 'hex'), 'base64').decode()
         
