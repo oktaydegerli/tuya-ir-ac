@@ -1,13 +1,13 @@
-from __future__ import annotations
-
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.typing import ConfigType
-
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
-from .climate import TuyaIrClimate
 from .const import DOMAIN
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
-    async_add_entities([TuyaIrClimate(hass, entry)])
+async def async_setup_entry(hass, entry):
+    """Kurulum giriş noktası."""
+    hass.async_create_task(
+        hass.config_entries.async_forward_entry_setup(entry, "climate")
+    )
+    return True
+
+async def async_unload_entry(hass, entry):
+    """Kurulum giriş noktasını kaldır."""
+    await hass.config_entries.async_forward_entry_unload(entry, "climate")
+    return True
