@@ -34,7 +34,7 @@ class TuyaIrClimateEntity(ClimateEntity):
         
         self._setup_tuya()
 
-    async def _setup_tuya(self): 
+    def _setup_tuya(self): 
         self._device_api = None
         self._ir_codes1 = None
         self._ir_codes2 = None
@@ -125,7 +125,7 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._attr_is_on = False
         self._set_state()
 
-    async def _set_state(self):
+    def _set_state(self):
 
         if self._attr_is_on == True and (self._attr_hvac_mode == HVACMode.OFF or self._attr_hvac_mode == None):
             self._attr_hvac_mode = HVACMode.HEAT_COOL
