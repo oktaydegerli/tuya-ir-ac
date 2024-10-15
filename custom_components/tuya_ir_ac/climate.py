@@ -66,6 +66,14 @@ class TuyaIrClimateEntity(ClimateEntity):
     def target_temperature(self):
         return self._attr_target_temperature
     
+    def async_set_hvac_mode(self, hvac_mode):
+        self._attr_hvac_mode = hvac_mode
+        self.async_write_ha_state()
+
+    def async_set_fan_mode(self, fan_mode):
+        self._attr_fan_mode = fan_mode
+        self.async_write_ha_state()
+    
     async def async_set_temperature(self, **kwargs):
         target_temperature = kwargs.get('temperature')
         if target_temperature is not None:
