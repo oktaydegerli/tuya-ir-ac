@@ -204,13 +204,13 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     def _set_state(self):
 
-        if hvac_mode == HVACMode.OFF or hvac_mode == None:
+        if self._hvac_mode == HVACMode.OFF or self._hvac_mode == None:
             self._is_on = False
-            hvac_mode = HVACMode.OFF
+            self._hvac_mode = HVACMode.OFF
         else:
             self._is_on = True
 
-        if self._is_on == True and (hvac_mode == HVACMode.OFF or hvac_mode == None):
+        if self._is_on == True and (self._hvac_mode == HVACMode.OFF or self._hvac_mode == None):
             self._hvac_mode = HVACMode.HEAT_COOL
 
         self._api.set_state(self._is_on, self._hvac_mode, self._temp, self._fan_mode)
