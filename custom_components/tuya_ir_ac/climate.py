@@ -109,15 +109,19 @@ class TuyaIrClimateEntity(ClimateEntity):
         return self._attr_target_temperature
     
     async def async_set_hvac_mode(self, hvac_mode: HVACMode):
-        self._attr_hvac_mode = hvac_mode
-        if hvac_mode is not HVACMode.OFF:
-            self._attr_is_on = True
-        await self._set_state()
+        if hvac_mode is not None:
+            self._attr_hvac_mode = hvac_mode
+            if self._attr_hvac_mode is HVACMode.OFF:
+                self._attr_is_on = False
+            else:
+                self._attr_is_on = True
+            await self._set_state()
 
     async def async_set_fan_mode(self, fan_mode: str):
-        self._attr_fan_mode = fan_mode
-        self._attr_is_on = True
-        await self._set_state()
+        if fan_mode is not None:
+            self._attr_fan_mode = fan_mode
+            self._attr_is_on = True
+            await self._set_state()
     
     async def async_set_temperature(self, **kwargs):
         target_temperature = kwargs.get('temperature')
@@ -140,7 +144,7 @@ class TuyaIrClimateEntity(ClimateEntity):
             _LOGGER.error("DeviceApi is not initialized")
             return
 
-        if self._attr_is_on == True and (self._attr_hvac_mode == HVACMode.OFF or self._attr_hvac_mode == None):
+        if self._attr_is_on == True and self._attr_hvac_mode == HVACMode.OFF:
             self._attr_hvac_mode = HVACMode.HEAT_COOL
 
         self.async_write_ha_state()
