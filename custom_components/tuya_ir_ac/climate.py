@@ -118,20 +118,11 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     @property
     def current_temperature(self):
-        value = self._temp
-        if value is not None:
-            value = int(value)
-        return value
+        return self._temp
 
     @property
     def target_temperature(self):
-        if self._hvac_mode == HVACMode.OFF:
-            return None
-
-        value = self._temp
-        if value is not None:
-            value = int(value)
-        return value
+        return self._temp
 
     @property
     def target_temperature_step(self):
