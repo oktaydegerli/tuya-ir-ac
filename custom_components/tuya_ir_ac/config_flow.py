@@ -41,10 +41,12 @@ class TuyaIrClimateOptionsFlow(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         data_schema = vol.Schema({
-            vol.Optional(CONF_DEVICE_IP, default=self.config_entry.options.get(CONF_DEVICE_IP, self.config_entry.data.get(CONF_DEVICE_IP))): str,
+            vol.Optional(CONF_AC_NAME, default=self.config_entry.options.get(CONF_AC_NAME, self.config_entry.data.get(CONF_AC_NAME))): str,
+            vol.Optional(CONF_DEVICE_ID, default=self.config_entry.options.get(CONF_DEVICE_ID, self.config_entry.data.get(CONF_DEVICE_ID))): str,
             vol.Optional(CONF_DEVICE_LOCAL_KEY, default=self.config_entry.options.get(CONF_DEVICE_LOCAL_KEY, self.config_entry.data.get(CONF_DEVICE_LOCAL_KEY))): str,
+            vol.Optional(CONF_DEVICE_IP, default=self.config_entry.options.get(CONF_DEVICE_IP, self.config_entry.data.get(CONF_DEVICE_IP))): str,
             vol.Optional(CONF_DEVICE_VERSION, default=self.config_entry.options.get(CONF_DEVICE_VERSION, self.config_entry.data.get(CONF_DEVICE_VERSION))): vol.In(DEVICE_VERSIONS),
-            # Diğer seçenekleri gerektiği gibi ekleyin
+            vol.Optional(CONF_DEVICE_MODEL, default=self.config_entry.options.get(CONF_DEVICE_MODEL, self.config_entry.data.get(CONF_DEVICE_MODEL))): vol.In(DEVICE_MODELS),
         })
 
         return self.async_show_form(step_id="init", data_schema=data_schema)
