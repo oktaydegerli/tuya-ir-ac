@@ -16,9 +16,9 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass, config_entry, async_add_entities):
     ac_name = config_entry.data.get(CONF_AC_NAME)
     device_id = config_entry.data.get(CONF_DEVICE_ID)
-    device_local_key = config_entry.options.get(CONF_DEVICE_LOCAL_KEY, config_entry.data.get(CONF_DEVICE_LOCAL_KEY))
-    device_ip = config_entry.options.get(CONF_DEVICE_IP, config_entry.data.get(CONF_DEVICE_IP))
-    device_version = config_entry.options.get(CONF_DEVICE_VERSION, config_entry.data.get(CONF_DEVICE_VERSION))
+    device_local_key = config_entry.data.get(CONF_DEVICE_LOCAL_KEY)
+    device_ip = config_entry.data.get(CONF_DEVICE_IP)
+    device_version = config_entry.data.get(CONF_DEVICE_VERSION)
     device_model = config_entry.data.get(CONF_DEVICE_MODEL)
 
     entity = TuyaIrClimateEntity(ac_name, device_id, device_local_key, device_ip, device_version, device_model)
