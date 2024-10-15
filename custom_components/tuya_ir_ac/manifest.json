@@ -1,11 +1,11 @@
 {
   "domain": "tuya_ir_ac",
   "name": "Tuya IR AC Remote",
-  "version": "1.1.40",
+  "version": "1.1.41",
   "dependencies": [],
   "codeowners": ["@oktaydegerli"],
   "requirements": [
-    "tinytuya~=1.10.3",
+    "tinytuya~=1.15.1",
     "json5~=0.9.14"
   ],
   "config_flow": true
