@@ -5,7 +5,7 @@ async def async_setup_entry(hass, entry):
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = entry
 
-    await hass.config_entries.async_forward_entry_setups(entry, ["climate"])
+    await hass.config_entries.async_forward_entry_setup(entry, "climate")
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
@@ -13,7 +13,7 @@ async def async_setup_entry(hass, entry):
 
 async def async_unload_entry(hass, entry):
     """Kurulum giriş noktasını kaldır."""
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, ["climate"])
+    unload_ok = await hass.config_entries.async_forward_entry_unload(entry, "climate")
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
 
