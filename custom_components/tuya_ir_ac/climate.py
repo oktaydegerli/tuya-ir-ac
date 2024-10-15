@@ -1,6 +1,6 @@
 from homeassistant.components.climate import ClimateEntity
-from homeassistant.components.climate.const import (HVACMode, ClimateEntityFeature)
-from homeassistant.const import (ATTR_TEMPERATURE, UnitOfTemperature)
+from homeassistant.components.climate.const import HVACMode, ClimateEntityFeature
+from homeassistant.const import UnitOfTemperature
 from .const import DOMAIN, CONF_AC_NAME, CONF_DEVICE_ID, CONF_DEVICE_LOCAL_KEY, CONF_DEVICE_IP, CONF_DEVICE_VERSION, CONF_DEVICE_MODEL
 
 import tinytuya
@@ -13,12 +13,12 @@ import threading
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-    ac_name = hass.data[DOMAIN][config_entry.entry_id][CONF_AC_NAME]
-    device_id = hass.data[DOMAIN][config_entry.entry_id][CONF_DEVICE_ID]
-    device_local_key = hass.data[DOMAIN][config_entry.entry_id][CONF_DEVICE_LOCAL_KEY]
-    device_ip = hass.data[DOMAIN][config_entry.entry_id][CONF_DEVICE_IP]
-    device_version = hass.data[DOMAIN][config_entry.entry_id][CONF_DEVICE_VERSION]
-    device_model = hass.data[DOMAIN][config_entry.entry_id][CONF_DEVICE_MODEL]
+    ac_name = config_entry.data.get(CONF_AC_NAME)
+    device_id = config_entry.data.get(CONF_DEVICE_ID)
+    device_local_key = config_entry.options.get(CONF_DEVICE_LOCAL_KEY, config_entry.data.get(CONF_DEVICE_LOCAL_KEY))
+    device_ip = config_entry.options.get(CONF_DEVICE_IP, config_entry.data.get(CONF_DEVICE_IP))
+    device_version = config_entry.options.get(CONF_DEVICE_VERSION, config_entry.data.get(CONF_DEVICE_VERSION))
+    device_model = config_entry.data.get(CONF_DEVICE_MODEL)
     async_add_entities([TuyaIrClimateEntity(ac_name, device_id, device_local_key, device_ip, device_version, device_model)])
 
 class TuyaIrClimateEntity(ClimateEntity):
@@ -65,8 +65,9 @@ class TuyaIrClimateEntity(ClimateEntity):
 
     @property
     def supported_features(self):
-        return ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.FAN_MODE | ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF
-    
+        return (ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.FAN_MODE |
+                ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF)
+
     @property
     def temperature_unit(self):
         return UnitOfTemperature.CELSIUS
@@ -115,17 +116,16 @@ class TuyaIrClimateEntity(ClimateEntity):
     async def async_set_fan_mode(self, fan_mode: str):
         if fan_mode is not None:
             self._attr_fan_mode = fan_mode
-            if self._attr_hvac_mode == HVACMode.OFF or self._attr_hvac_mode == None:
-                self._attr_hvac_mode == HVACMode.HEAT_COOL
+            if self._attr_hvac_mode == HVACMode.OFF or self._attr_hvac_mode is None:
+                self._attr_hvac_mode = HVACMode.HEAT_COOL
             await self._set_state()
     
     async def async_set_temperature(self, **kwargs):
         target_temperature = kwargs.get('temperature')
         if target_temperature is not None:
-            temperature = int(temperature)
-            self._attr_target_temperature = target_temperature
-            if self._attr_hvac_mode == HVACMode.OFF or self._attr_hvac_mode == None:
-                self._attr_hvac_mode == HVACMode.HEAT_COOL
+            self._attr_target_temperature = int(target_temperature)
+            if self._attr_hvac_mode == HVACMode.OFF or self._attr_hvac_mode is None:
+                self._attr_hvac_mode = HVACMode.HEAT_COOL
             await self._set_state()
 
     async def async_turn_on(self):
@@ -146,45 +146,32 @@ class TuyaIrClimateEntity(ClimateEntity):
 
         if self._attr_hvac_mode == HVACMode.OFF:
             hvac_mode_key = "off"
-
         elif self._attr_hvac_mode == HVACMode.HEAT_COOL:
             hvac_mode_key = "auto"
-
         elif self._attr_hvac_mode == HVACMode.COOL:
             hvac_mode_key = "cool"
-
         elif self._attr_hvac_mode == HVACMode.HEAT:
             hvac_mode_key = "heat"
-
         elif self._attr_hvac_mode == HVACMode.DRY:
             hvac_mode_key = "dry"
-
         elif self._attr_hvac_mode == HVACMode.FAN_ONLY:
             hvac_mode_key = "fan"
-
         else:
             msg = 'Mode must be one of off, cool, heat, dry, fan or auto'
             raise Exception(msg)
 
-
         if self._attr_fan_mode == 'Otomatik':
             fan_mode_key = 'auto'
-
         elif self._attr_fan_mode == 'Sessiz':
             fan_mode_key = 'quiet'
-
         elif self._attr_fan_mode == 'Düşük':
             fan_mode_key = 'low'
-
         elif self._attr_fan_mode == 'Orta':
             fan_mode_key = 'medium'
-
         elif self._attr_fan_mode == 'Yüksek':
             fan_mode_key = 'high'
-
         elif self._attr_fan_mode == 'En Yüksek':
             fan_mode_key = 'highest'                    
-
         else:
             msg = 'Fan mode must be one of Otomatik, Sessiz, Düşük, Orta, Yüksek or En Yüksek'
             raise Exception(msg)
