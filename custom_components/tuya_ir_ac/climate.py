@@ -4,7 +4,9 @@ from contextlib import contextmanager
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.helpers.restore_state import RestoreEntity
-from .ir_api import IRApi
+import json5
+import os
+import tinytuya
 
 from homeassistant.const import (ATTR_TEMPERATURE, UnitOfTemperature)
 from homeassistant.components.climate import (ClimateEntity, PLATFORM_SCHEMA)
@@ -30,22 +32,33 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 })
 
 
+current_dir = os.path.dirname(__file__)
+commands_path1 = os.path.join(current_dir, './ac-commands-1.json5')
+commands_path2 = os.path.join(current_dir, './ac-commands-2.json5')
+
+with open(commands_path1, 'r') as f:
+    ir_commands1 = json5.load(f)
+
+with open(commands_path2, 'r') as f:
+    ir_commands2 = json5.load(f)
+
+
 async def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     name = config.get(CONF_AC_NAME)
     device_id = config.get(CONF_AC_TUYA_IR_DEVICE_ID)
-    local_key = config.get(CONF_AC_TUYA_DEVICE_LOCAL_KEY)
+    device_local_key = config.get(CONF_AC_TUYA_DEVICE_LOCAL_KEY)
     device_ip = config.get(CONF_AC_TUYA_DEVICE_IP)
     device_version = config.get(CONF_AC_TUYA_DEVICE_VERSION)
     device_model = config.get(CONF_AC_TUYA_DEVICE_MODEL)
 
     async_add_devices([
-        TuyaIRAC(hass, name, device_id, local_key, device_ip, device_version, device_model)
+        TuyaIRAC(hass, name, device_id, device_local_key, device_ip, device_version, device_model)
     ])
 
 
 class TuyaIRAC(RestoreEntity, ClimateEntity):
     
-    def __init__(self, hass, name, device_id: str, local_key: str, device_ip: str, device_version: str, device_model: str):
+    def __init__(self, hass, name, device_id: str, device_local_key: str, device_ip: str, device_version: str, device_model: str):
         self.hass = hass
         self._enable_turn_on_off_backwards_compatibility = False
         self._name = name
@@ -53,14 +66,26 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         self._hvac_mode = HVACMode.OFF
         self._fan_mode = "Düşük"
         self._temp = 25
+
+        self._device_id = device_id
+        self._device_local_key = device_local_key
+        self._device_ip = device_ip
+        self._device_version = float('3.3' if device_version is None else device_version)
+        self._device_api = None
+        self._device_model = device_model
+
         self._mutex = Lock()
-        self._api = IRApi(device_id, local_key, device_ip, device_version, device_model)
+
+    def _setup_tuya(self):
+        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._local_key)
+        self._device_api.set_version(self._device_version)
+
 
     async def async_added_to_hass(self):
         
         await super().async_added_to_hass()
         
-        await self.hass.async_add_executor_job(self._api.setup())
+        await self.hass.async_add_executor_job(self._setup_tuya())
 
         prev = await self.async_get_last_state()
         
