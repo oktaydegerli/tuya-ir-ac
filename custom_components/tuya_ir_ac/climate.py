@@ -128,10 +128,11 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._attr_is_on = False
         self._set_state()
 
-    async def _set_state(self):
+    def _set_state(self):
 
         if self._device_api is None:
             _LOGGER.error("DeviceApi is not initialized")
+            return
 
         if self._attr_is_on == True and (self._attr_hvac_mode == HVACMode.OFF or self._attr_hvac_mode == None):
             self._attr_hvac_mode = HVACMode.HEAT_COOL
@@ -198,7 +199,8 @@ class TuyaIrClimateEntity(ClimateEntity):
         
         payload = self._device_api.generate_payload(tinytuya.CONTROL, {"1": "study_key", "7": b64})
         
-        res = await self.hass.async_add_executor_job(self._device_api.send, payload)
+        res = self._device_api.send(payload)
 
         if res is not None:
-            _LOGGER.error("Send IR command failed with %s", res)        
+            _LOGGER.error
+            return
