@@ -1,7 +1,7 @@
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import HVACMode, ClimateEntityFeature
 from homeassistant.const import UnitOfTemperature
-from .const import DOMAIN, CONF_AC_NAME, CONF_DEVICE_ID, CONF_DEVICE_LOCAL_KEY, CONF_DEVICE_IP, CONF_DEVICE_VERSION, CONF_DEVICE_MODEL
+from .const import CONF_AC_NAME, CONF_DEVICE_ID, CONF_DEVICE_LOCAL_KEY, CONF_DEVICE_IP, CONF_DEVICE_VERSION, CONF_DEVICE_MODEL
 
 import tinytuya
 import os
@@ -12,7 +12,6 @@ import threading
 import asyncio
 
 _LOGGER = logging.getLogger(__name__)
-
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     ac_name = config_entry.data.get(CONF_AC_NAME)
@@ -37,7 +36,7 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._device_model = device_model
         self._attr_hvac_mode = HVACMode.OFF
         self._attr_fan_mode = "Orta"
-        self._attr_current_temperature = 20
+        self._attr_current_temperature = None
         self._attr_target_temperature = 22
         self._lock = threading.Lock()
         self._device_api = None
