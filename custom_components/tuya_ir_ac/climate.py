@@ -40,8 +40,8 @@ class TuyaIrClimateEntity(ClimateEntity):
     def _setup_tuya(self): 
         if self._device_api is None:
             current_dir = os.path.dirname(__file__)
-            commands_path1 = os.path.join(current_dir, './ac-commands-1.json5')
-            commands_path2 = os.path.join(current_dir, './ac-commands-2.json5')
+            commands_path1 = os.path.join(current_dir, './MSZ-GE25VA.json5')
+            commands_path2 = os.path.join(current_dir, './MSC-GE35VB.json5')
 
             with open(commands_path1, 'r') as f:
                 self._ir_codes1 = json5.load(f)
