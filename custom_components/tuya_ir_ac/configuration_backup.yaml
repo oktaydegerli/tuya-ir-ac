@@ -1,0 +1,24 @@
+climate:
+  - platform: tuya_ir_ac
+    name: "Salon Klima"
+    tuya_ir_device_id: "37600832e09806a64477"
+    tuya_device_local_key: "2889c10adf3d90a1"
+    tuya_device_ip: '192.168.1.153'
+    tuya_device_version: '3.3'
+    tuya_device_model: 'MSZ-GE25VA'
+
+  - platform: tuya_ir_ac
+    name: "Yatak Odası Klima"
+    tuya_ir_device_id: "20308038e09806b4f364"
+    tuya_device_local_key: "458292414686bd4d"
+    tuya_device_ip: '192.168.1.152'
+    tuya_device_version: '3.3'
+    tuya_device_model: 'MSZ-GE25VA'
+
+  - platform: tuya_ir_ac
+    name: "Çalışma Odası Klima"
+    tuya_ir_device_id: "37600832e09806a68bb1"
+    tuya_device_local_key: "by9Z.X4Q#dAKi/7~"
+    tuya_device_ip: '192.168.1.151'
+    tuya_device_version: '3.3'
+    tuya_device_model: 'MSC-GE35VB'

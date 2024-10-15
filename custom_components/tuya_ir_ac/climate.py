@@ -9,10 +9,6 @@ from homeassistant.const import TEMP_CELSIUS, ATTR_TEMPERATURE
 import homeassistant.helpers.config_validation as cv
 from .const import DOMAIN, CONF_API_KEY, CONF_NAME
 
-_LOGGER = logging.getLogger(__name__)
-
-PLATFORM = "climate"
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     """Config entry ile platformu kurulum."""
     name = entry.data.get(CONF_NAME)
