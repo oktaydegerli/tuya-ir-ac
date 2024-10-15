@@ -1,16 +1,26 @@
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (HVACMode, ClimateEntityFeature)
 from homeassistant.const import (ATTR_TEMPERATURE, UnitOfTemperature)
-from .const import DOMAIN, CONF_API_KEY
+from .const import DOMAIN, CONF_AC_NAME, CONF_DEVICE_ID, CONF_DEVICE_LOCAL_KEY, CONF_DEVICE_IP, CONF_DEVICE_VERSION, CONF_DEVICE_MODEL
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-    api_key = hass.data[DOMAIN][config_entry.entry_id][CONF_API_KEY]
-    async_add_entities([TuyaIrClimateEntity(api_key)])
+    ac_name = hass.data[DOMAIN][config_entry.entry_id][CONF_AC_NAME]
+    device_id = hass.data[DOMAIN][config_entry.entry_id][CONF_DEVICE_ID]
+    device_local_key = hass.data[DOMAIN][config_entry.entry_id][CONF_DEVICE_LOCAL_KEY]
+    device_ip = hass.data[DOMAIN][config_entry.entry_id][CONF_DEVICE_IP]
+    device_version = hass.data[DOMAIN][config_entry.entry_id][CONF_DEVICE_VERSION]
+    device_model = hass.data[DOMAIN][config_entry.entry_id][CONF_DEVICE_MODEL]
+    async_add_entities([TuyaIrClimateEntity(ac_name, device_id, device_local_key, device_ip, device_version, device_model)])
 
 class TuyaIrClimateEntity(ClimateEntity):
-    def __init__(self, api_key):
+    def __init__(self, ac_name, device_id, device_local_key, device_ip, device_version, device_model):
         self._enable_turn_on_off_backwards_compatibility = False
-        self._api_key = api_key
+        self._ac_name = ac_name
+        self._device_id = device_id
+        self._device_local_key = device_local_key
+        self._device_ip = device_ip
+        self._device_version = device_version
+        self._device_model = device_model
         self._attr_name = "Air Conditioner"
         self._attr_is_on = False
         self._attr_hvac_mode = HVACMode.OFF

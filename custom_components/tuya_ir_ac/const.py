@@ -1,2 +1,7 @@
 DOMAIN = "tuya_ir_ac"
-CONF_API_KEY = "api_key"
+CONF_AC_NAME = "name"
+CONF_DEVICE_ID = "device_id"
+CONF_DEVICE_LOCAL_KEY = "device_local_key"
+CONF_DEVICE_IP = "device_ip"
+CONF_DEVICE_VERSION = "device_version"
+CONF_DEVICE_MODEL = "device_model"

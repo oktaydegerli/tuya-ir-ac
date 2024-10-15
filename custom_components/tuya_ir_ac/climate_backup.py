@@ -14,21 +14,21 @@ from homeassistant.components.climate import (ClimateEntity, PLATFORM_SCHEMA)
 from homeassistant.components.climate.const import (HVACMode, ClimateEntityFeature)
 
 CONF_AC_NAME = "name"
-CONF_AC_TUYA_IR_DEVICE_ID = "tuya_ir_device_id"
-CONF_AC_TUYA_DEVICE_LOCAL_KEY = "tuya_device_local_key"
-CONF_AC_TUYA_DEVICE_IP = "tuya_device_ip"
-CONF_AC_TUYA_DEVICE_VERSION = "tuya_device_version"
-CONF_AC_TUYA_DEVICE_MODEL = "tuya_device_model"
+CONF_DEVICE_ID = "tuya_ir_device_id"
+CONF_DEVICE_LOCAL_KEY = "tuya_device_local_key"
+CONF_DEVICE_IP = "tuya_device_ip"
+CONF_DEVICE_VERSION = "tuya_device_version"
+CONF_DEVICE_MODEL = "tuya_device_model"
 
 DEFAULT_NAME = "Air Conditioner"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_AC_NAME, default=DEFAULT_NAME): cv.string,
-    vol.Required(CONF_AC_TUYA_IR_DEVICE_ID): cv.string,
-    vol.Required(CONF_AC_TUYA_DEVICE_LOCAL_KEY): cv.string,
-    vol.Required(CONF_AC_TUYA_DEVICE_IP): cv.string,
-    vol.Required(CONF_AC_TUYA_DEVICE_VERSION, default='3.3'): cv.string,
-    vol.Required(CONF_AC_TUYA_DEVICE_MODEL, default='MSZ-GE25VA'): cv.string,
+    vol.Required(CONF_DEVICE_ID): cv.string,
+    vol.Required(CONF_DEVICE_LOCAL_KEY): cv.string,
+    vol.Required(CONF_DEVICE_IP): cv.string,
+    vol.Required(CONF_DEVICE_VERSION, default='3.3'): cv.string,
+    vol.Required(CONF_DEVICE_MODEL, default='MSZ-GE25VA'): cv.string,
 })
 
 current_dir = os.path.dirname(__file__)
@@ -43,11 +43,11 @@ with open(commands_path2, 'r') as f:
 
 async def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     name = config.get(CONF_AC_NAME)
-    device_id = config.get(CONF_AC_TUYA_IR_DEVICE_ID)
-    device_local_key = config.get(CONF_AC_TUYA_DEVICE_LOCAL_KEY)
-    device_ip = config.get(CONF_AC_TUYA_DEVICE_IP)
-    device_version = config.get(CONF_AC_TUYA_DEVICE_VERSION)
-    device_model = config.get(CONF_AC_TUYA_DEVICE_MODEL)
+    device_id = config.get(CONF_DEVICE_ID)
+    device_local_key = config.get(CONF_DEVICE_LOCAL_KEY)
+    device_ip = config.get(CONF_DEVICE_IP)
+    device_version = config.get(CONF_DEVICE_VERSION)
+    device_model = config.get(CONF_DEVICE_MODEL)
 
     async_add_devices([
         TuyaIrClimate(hass, name, device_id, device_local_key, device_ip, device_version, device_model)
