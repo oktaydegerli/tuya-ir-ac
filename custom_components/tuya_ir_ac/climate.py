@@ -6,6 +6,7 @@ import voluptuous as vol
 from homeassistant.helpers.restore_state import RestoreEntity
 import json5
 import os
+import codecs
 import tinytuya
 
 from homeassistant.const import (ATTR_TEMPERATURE, UnitOfTemperature)
@@ -238,7 +239,70 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         if self._is_on == True and (self._hvac_mode == HVACMode.OFF or self._hvac_mode == None):
             self._hvac_mode = HVACMode.HEAT_COOL
 
-        self._api.set_state(self._is_on, self._hvac_mode, self._temp, self._fan_mode)
+        hvac_mode_key = None
+
+        if self._hvac_mode == HVACMode.OFF or self._is_on == False:
+            hvac_mode_key = "off"
+
+        if self._hvac_mode == HVACMode.HEAT_COOL or self._hvac_mode == HVACMode.AUTO:
+            hvac_mode_key = "auto"
+
+        if self._hvac_mode == HVACMode.COOL:
+            hvac_mode_key = "cool"
+
+        if self._hvac_mode == HVACMode.HEAT:
+            hvac_mode_key = "heat"
+
+        if self._hvac_mode == HVACMode.DRY:
+            hvac_mode_key = "dry"
+
+        if self._hvac_mode == HVACMode.FAN_ONLY:
+            hvac_mode_key = "fan"
+
+        if hvac_mode_key == None:
+            msg = 'Mode must be one of off, cool, heat, dry, fan or auto'
+            raise Exception(msg)
+        
+        fan_mode_key = None
+
+        if self._fan_mode == 'Otomatik':
+            fan_mode_key = 'auto'
+
+        if self._fan_mode == 'Sessiz':
+            fan_mode_key = 'quiet'
+
+        if self._fan_mode == 'Düşük':
+            fan_mode_key = 'low'
+
+        if self._fan_mode == 'Orta':
+            fan_mode_key = 'medium'
+
+        if self._fan_mode == 'Yüksek':
+            fan_mode_key = 'high'
+
+        if self._fan_mode == 'En Yüksek':
+            fan_mode_key = 'highest'                    
+
+        if fan_mode_key is None:
+            msg = 'Fan mode must be one of Otomatik, Sessiz, Düşük, Orta, Yüksek or En Yüksek'
+            raise Exception(msg)
+
+        if hvac_mode_key == "off":
+            if self._device_model == 'MSZ-GE25VA':
+                ir_code = ir_commands1["off"]
+            else:
+                ir_code = ir_commands2["off"]
+        else: 
+            if self._device_model == 'MSZ-GE25VA':
+                ir_code = ir_commands1[hvac_mode_key][fan_mode_key][str(self._temp)]
+            else:
+                ir_code = ir_commands2[hvac_mode_key][fan_mode_key][str(self._temp)]
+
+        b64 = codecs.encode(codecs.decode(ir_code, 'hex'), 'base64').decode()
+        
+        payload = self._device_api.generate_payload(tinytuya.CONTROL, {"1": "study_key", "7": b64})
+        
+        self._device_api.send(payload)
 
 
     @contextmanager
