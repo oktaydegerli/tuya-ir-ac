@@ -8,6 +8,7 @@ import os
 import json5
 import codecs
 import logging
+import threading
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._attr_fan_mode = "Orta"
         self._attr_current_temperature = 20
         self._attr_target_temperature = 22
+        self._lock = threading.Lock()
         
         self._setup_tuya()
 
@@ -199,7 +201,8 @@ class TuyaIrClimateEntity(ClimateEntity):
         
         payload = self._device_api.generate_payload(tinytuya.CONTROL, {"1": "study_key", "7": b64})
         
-        res = await self.hass.async_add_executor_job(self._device_api.send, payload)
+        with self._lock:
+            res = await self.hass.async_add_executor_job(self._device_api.send, payload)
 
         if res is not None:
             _LOGGER.error("Error sending payload: %s", res)
