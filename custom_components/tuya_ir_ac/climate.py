@@ -108,27 +108,27 @@ class TuyaIrClimateEntity(ClimateEntity):
     
     async def async_set_hvac_mode(self, hvac_mode: HVACMode):
         self._attr_hvac_mode = hvac_mode
-        self._set_state()
+        await self._set_state()
 
     async def async_set_fan_mode(self, fan_mode: str):
         self._attr_fan_mode = fan_mode
-        self._set_state()
+        await self._set_state()
     
     async def async_set_temperature(self, **kwargs):
         target_temperature = kwargs.get('temperature')
         if target_temperature is not None:
             self._attr_target_temperature = target_temperature
-            self._set_state()
+            await self._set_state()
 
     async def async_turn_on(self):
         self._attr_is_on = True
-        self._set_state()
+        await self._set_state()
 
     async def async_turn_off(self):
         self._attr_is_on = False
-        self._set_state()
+        await self._set_state()
 
-    def _set_state(self):
+    async def _set_state(self):
 
         if self._device_api is None:
             _LOGGER.error("DeviceApi is not initialized")
@@ -191,16 +191,16 @@ class TuyaIrClimateEntity(ClimateEntity):
                 ir_code = self._ir_codes2["off"]
         else: 
             if self._device_model == 'MSZ-GE25VA':
-                ir_code = self._ir_codes1[hvac_mode_key][fan_mode_key][str(self._temp)]
+                ir_code = self._ir_codes1[hvac_mode_key][fan_mode_key][str(self._attr_target_temperature)]
             else:
-                ir_code = self._ir_codes2[hvac_mode_key][fan_mode_key][str(self._temp)]
+                ir_code = self._ir_codes2[hvac_mode_key][fan_mode_key][str(self._attr_target_temperature)]
 
         b64 = codecs.encode(codecs.decode(ir_code, 'hex'), 'base64').decode()
         
         payload = self._device_api.generate_payload(tinytuya.CONTROL, {"1": "study_key", "7": b64})
         
-        res = self._device_api.send(payload)
+        res = await self.hass.async_add_executor_job(self._device_api.send, payload)
 
         if res is not None:
-            _LOGGER.error
+            _LOGGER.error("Error sending payload: %s", res)
             return
