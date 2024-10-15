@@ -1,6 +1,6 @@
 {
   "domain": "tuya_ir_ac",
-  "name": "Tuya IR remote control for air conditioners",
+  "name": "Tuya IR AC Remote",
   "dependencies": [],
   "codeowners": [
     "@oktaydegerli"

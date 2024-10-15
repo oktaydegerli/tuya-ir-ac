@@ -20,8 +20,7 @@ CONF_AC_TUYA_DEVICE_IP = "tuya_device_ip"
 CONF_AC_TUYA_DEVICE_VERSION = "tuya_device_version"
 CONF_AC_TUYA_DEVICE_MODEL = "tuya_device_model"
 
-DEFAULT_NAME = "TuyaIRAC"
-
+DEFAULT_NAME = "Air Conditioner"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_AC_NAME, default=DEFAULT_NAME): cv.string,
@@ -32,7 +31,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_AC_TUYA_DEVICE_MODEL, default='MSZ-GE25VA'): cv.string,
 })
 
-
 current_dir = os.path.dirname(__file__)
 commands_path1 = os.path.join(current_dir, './ac-commands-1.json5')
 commands_path2 = os.path.join(current_dir, './ac-commands-2.json5')
@@ -42,7 +40,6 @@ with open(commands_path1, 'r') as f:
 
 with open(commands_path2, 'r') as f:
     ir_commands2 = json5.load(f)
-
 
 async def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     name = config.get(CONF_AC_NAME)
@@ -64,7 +61,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         self._enable_turn_on_off_backwards_compatibility = False
         self._name = name
         self._is_on = False
-        self._hvac_mode = HVACMode.HEAT_COOL
+        self._hvac_mode = HVACMode.OFF
         self._fan_mode = "Orta"
         self._temp = 25
         self._device_id = device_id
@@ -88,7 +85,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         
         if prev:
             self._is_on = prev.attributes.get("internal_is_on", False)
-            self._hvac_mode = prev.attributes.get("internal_hvac_mode", HVACMode.HEAT_COOL)
+            self._hvac_mode = prev.attributes.get("internal_hvac_mode", HVACMode.OFF)
             self._temp = prev.attributes.get("internal_temp", 25)
             self._fan_mode = prev.attributes.get("internal_fan_mode", "Orta")
 
@@ -143,7 +140,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     @property
     def hvac_modes(self):
-        return [HVACMode.COOL, HVACMode.FAN_ONLY, HVACMode.DRY, HVACMode.HEAT, HVACMode.HEAT_COOL]
+        return [HVACMode.OFF, HVACMode.COOL, HVACMode.FAN_ONLY, HVACMode.DRY, HVACMode.HEAT, HVACMode.HEAT_COOL]
 
     @property
     def fan_mode(self):
@@ -203,7 +200,11 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     def _set_hvac_mode_critical(self, hvac_mode):
         if hvac_mode is None:
             return
-        self._is_on = True
+        self._hvac_mode = hvac_mode
+        if self.hvac_mode == HVACMode.OFF:
+            self._is_on = False
+        else:
+            self._is_on = True
         self._set_state()
 
     def set_fan_mode(self, fan_mode):
@@ -219,7 +220,10 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     def _set_state(self):
 
-        if self._is_on == False:
+        if self._is_on == True and (self._hvac_mode == HVACMode.OFF or self._hvac_mode == None):
+            self._hvac_mode = HVACMode.HEAT_COOL
+
+        if self._hvac_mode == HVACMode.OFF or self._is_on == False:
             hvac_mode_key = "off"
 
         elif self._hvac_mode == HVACMode.HEAT_COOL or self._hvac_mode == HVACMode.AUTO:
