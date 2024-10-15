@@ -21,7 +21,6 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._device_ip = device_ip
         self._device_version = device_version
         self._device_model = device_model
-        self._attr_name = "Air Conditioner"
         self._attr_is_on = False
         self._attr_hvac_mode = HVACMode.OFF
         self._attr_fan_mode = "Orta"
@@ -30,7 +29,7 @@ class TuyaIrClimateEntity(ClimateEntity):
 
     @property
     def name(self):
-        return self._attr_name
+        return self._ac_name
 
     @property
     def supported_features(self):
