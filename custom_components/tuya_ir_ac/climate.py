@@ -83,7 +83,7 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._attr_target_temperature = 22
         self._lock = threading.Lock()
 
-        self._setup_tuya()
+        # self._setup_tuya()
 
     def _setup_tuya(self):
         self._device_api = tinytuya.Device(
