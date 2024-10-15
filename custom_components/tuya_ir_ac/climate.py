@@ -39,6 +39,9 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._attr_target_temperature = 22
         self._lock = threading.Lock()
         self._device_api = None
+        threading.Thread(target=self._setup_tuya).start()
+
+    def _setup_tuya(self):
 
         current_dir = os.path.dirname(__file__)
         commands_path1 = os.path.join(current_dir, './MSZ-GE25VA.json5')
@@ -49,24 +52,14 @@ class TuyaIrClimateEntity(ClimateEntity):
 
         with open(commands_path2, 'r') as f:
             self._ir_codes2 = json5.load(f)
-
-        if self._device_id is None:
-            _LOGGER.error("Error device_id: %s", self._device_id)
-            return
-
-        if self._device_ip is None:
-            _LOGGER.error("Error device_ip: %s", self._device_ip)
-            return
-
-        if self._device_local_key is None:
-            _LOGGER.error("Error _device_local_key: %s", self._device_local_key)
-            return
         
-        if self._device_version is None:
-            _LOGGER.error("Error device_version: %s", self._device_version)
-            return
+        _LOGGER.error("Error device_id: %s", self._device_id)
+        _LOGGER.error("Error device_ip: %s", self._device_ip)
+        _LOGGER.error("Error _device_local_key: %s", self._device_local_key)
+        _LOGGER.error("Error device_version: %s", self._device_version)
 
         self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", self._device_version)
+
 
     @property
     def unique_id(self) -> str:
