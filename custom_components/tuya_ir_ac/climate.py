@@ -193,6 +193,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
 
     def _set_temperature_critical(self, temperature):
         self._temp = temperature
+        self._is_on = True
         self._set_state()
 
     def set_hvac_mode(self, hvac_mode):
@@ -200,28 +201,30 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             self.run_with_lock(lambda: self._set_hvac_mode_critical(hvac_mode))
 
     def _set_hvac_mode_critical(self, hvac_mode):
+        if hvac_mode is None:
+            return
         self._hvac_mode = hvac_mode
+        if self.hvac_mode == HVACMode.OFF:
+            self._is_on = False
+        else:
+            self._is_on = True
         self._set_state()
 
     def set_fan_mode(self, fan_mode):
+        if fan_mode is None:
+            return
         with self._act_and_update():
             self.run_with_lock(lambda: self._set_fan_mode_critical(fan_mode))
 
     def _set_fan_mode_critical(self, fan_mode):
         self._fan_mode = fan_mode
+        self._is_on = True
         self._set_state()
 
     def _set_state(self):
 
-        if self._hvac_mode == HVACMode.OFF or self._hvac_mode == None:
-            self._is_on = False
-            self._hvac_mode = HVACMode.OFF
-        else:
-            self._is_on = True
-
         if self._is_on == True and (self._hvac_mode == HVACMode.OFF or self._hvac_mode == None):
             self._hvac_mode = HVACMode.HEAT_COOL
-
 
         if self._hvac_mode == HVACMode.OFF or self._is_on == False:
             hvac_mode_key = "off"
