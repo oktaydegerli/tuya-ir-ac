@@ -66,11 +66,11 @@ class TuyaIrClimateEntity(ClimateEntity):
     def target_temperature(self):
         return self._attr_target_temperature
     
-    def async_set_hvac_mode(self, hvac_mode):
+    async def async_set_hvac_mode(self, hvac_mode: HVACMode):
         self._attr_hvac_mode = hvac_mode
         self.async_write_ha_state()
 
-    def async_set_fan_mode(self, fan_mode):
+    async def async_set_fan_mode(self, fan_mode: str):
         self._attr_fan_mode = fan_mode
         self.async_write_ha_state()
     
@@ -82,10 +82,10 @@ class TuyaIrClimateEntity(ClimateEntity):
             # Örneğin: await self._set_device_temperature(target_temperature)
             self.async_write_ha_state()
 
-    def async_turn_on(self):
+    async def async_turn_on(self):
         self._attr_is_on = True
         self.async_write_ha_state()
 
-    def async_turn_off(self):
+    async def async_turn_off(self):
         self._attr_is_on = False
         self.async_write_ha_state()
