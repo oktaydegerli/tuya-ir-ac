@@ -8,7 +8,7 @@ from .const import DOMAIN, CONF_API_KEY, CONF_NAME # const.py dosyanızdan impor
 
 _LOGGER = logging.getLogger(__name__)
 
-class TuyaIRACConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class TuyaIrClimateConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Örnek Klima için konfigürasyon akışı."""
 
     VERSION = 1

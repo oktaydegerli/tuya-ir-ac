@@ -50,11 +50,11 @@ async def async_setup_platform(hass, config, async_add_devices, discovery_info=N
     device_model = config.get(CONF_AC_TUYA_DEVICE_MODEL)
 
     async_add_devices([
-        TuyaIRAC(hass, name, device_id, device_local_key, device_ip, device_version, device_model)
+        TuyaIrClimate(hass, name, device_id, device_local_key, device_ip, device_version, device_model)
     ])
 
 
-class TuyaIRAC(RestoreEntity, ClimateEntity):
+class TuyaIrClimate(RestoreEntity, ClimateEntity):
     
     def __init__(self, hass, name, device_id: str, device_local_key: str, device_ip: str, device_version: str, device_model: str):
         self.hass = hass
