@@ -110,16 +110,20 @@ class TuyaIrClimateEntity(ClimateEntity):
     
     async def async_set_hvac_mode(self, hvac_mode: HVACMode):
         self._attr_hvac_mode = hvac_mode
+        if hvac_mode is not HVACMode.OFF:
+            self._attr_is_on = True
         await self._set_state()
 
     async def async_set_fan_mode(self, fan_mode: str):
         self._attr_fan_mode = fan_mode
+        self._attr_is_on = True
         await self._set_state()
     
     async def async_set_temperature(self, **kwargs):
         target_temperature = kwargs.get('temperature')
         if target_temperature is not None:
             self._attr_target_temperature = target_temperature
+            self._attr_is_on = True
             await self._set_state()
 
     async def async_turn_on(self):
