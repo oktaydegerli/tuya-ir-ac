@@ -37,10 +37,10 @@ class IRApi:
 
         hvac_mode_key = None
 
-        if hvac_mode == None or hvac_mode == HVACMode.OFF or is_on == False:
+        if hvac_mode == HVACMode.OFF or is_on == False:
             hvac_mode_key = "off"
 
-        if hvac_mode == HVACMode.HEAT_COOL or hvac_mode == HVACMode.AUTO or (is_on == True and (hvac_mode == None or hvac_mode == HVACMode.OFF)):
+        if hvac_mode == HVACMode.HEAT_COOL or hvac_mode == HVACMode.AUTO:
             hvac_mode_key = "auto"
 
         if hvac_mode == HVACMode.COOL:
