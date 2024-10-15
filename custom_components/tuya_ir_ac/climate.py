@@ -30,7 +30,6 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._device_ip = device_ip
         self._device_version = device_version
         self._device_model = device_model
-        self._attr_is_on = False
         self._attr_hvac_mode = HVACMode.OFF
         self._attr_fan_mode = "Orta"
         self._attr_current_temperature = 20
@@ -111,31 +110,30 @@ class TuyaIrClimateEntity(ClimateEntity):
     async def async_set_hvac_mode(self, hvac_mode: HVACMode):
         if hvac_mode is not None:
             self._attr_hvac_mode = hvac_mode
-            if self._attr_hvac_mode is HVACMode.OFF:
-                self._attr_is_on = False
-            else:
-                self._attr_is_on = True
             await self._set_state()
 
     async def async_set_fan_mode(self, fan_mode: str):
         if fan_mode is not None:
             self._attr_fan_mode = fan_mode
-            self._attr_is_on = True
+            if self._attr_hvac_mode == HVACMode.OFF or self._attr_hvac_mode == None:
+                self._attr_hvac_mode == HVACMode.HEAT_COOL
             await self._set_state()
     
     async def async_set_temperature(self, **kwargs):
         target_temperature = kwargs.get('temperature')
         if target_temperature is not None:
+            temperature = int(temperature)
             self._attr_target_temperature = target_temperature
-            self._attr_is_on = True
+            if self._attr_hvac_mode == HVACMode.OFF or self._attr_hvac_mode == None:
+                self._attr_hvac_mode == HVACMode.HEAT_COOL
             await self._set_state()
 
     async def async_turn_on(self):
-        self._attr_is_on = True
+        self._attr_hvac_mode = HVACMode.HEAT_COOL
         await self._set_state()
 
     async def async_turn_off(self):
-        self._attr_is_on = False
+        self._attr_hvac_mode = HVACMode.OFF
         await self._set_state()
 
     async def _set_state(self):
@@ -144,15 +142,12 @@ class TuyaIrClimateEntity(ClimateEntity):
             _LOGGER.error("DeviceApi is not initialized")
             return
 
-        if self._attr_is_on == True and self._attr_hvac_mode == HVACMode.OFF:
-            self._attr_hvac_mode = HVACMode.HEAT_COOL
-
         self.async_write_ha_state()
 
-        if self._attr_hvac_mode == HVACMode.OFF or self._attr_is_on == False:
+        if self._attr_hvac_mode == HVACMode.OFF:
             hvac_mode_key = "off"
 
-        elif self._attr_hvac_mode == HVACMode.HEAT_COOL or self._attr_hvac_mode == HVACMode.AUTO:
+        elif self._attr_hvac_mode == HVACMode.HEAT_COOL:
             hvac_mode_key = "auto"
 
         elif self._attr_hvac_mode == HVACMode.COOL:
