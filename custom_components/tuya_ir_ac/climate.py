@@ -35,25 +35,21 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._attr_current_temperature = 20
         self._attr_target_temperature = 22
         self._lock = threading.Lock()
-        
-        self._setup_tuya()
+        self._device_api = None
 
     def _setup_tuya(self): 
-        self._device_api = None
-        self._ir_codes1 = None
-        self._ir_codes2 = None
+        if self._device_api is None:
+            current_dir = os.path.dirname(__file__)
+            commands_path1 = os.path.join(current_dir, './ac-commands-1.json5')
+            commands_path2 = os.path.join(current_dir, './ac-commands-2.json5')
 
-        current_dir = os.path.dirname(__file__)
-        commands_path1 = os.path.join(current_dir, './ac-commands-1.json5')
-        commands_path2 = os.path.join(current_dir, './ac-commands-2.json5')
+            with open(commands_path1, 'r') as f:
+                self._ir_codes1 = json5.load(f)
 
-        with open(commands_path1, 'r') as f:
-            self._ir_codes1 = json5.load(f)
+            with open(commands_path2, 'r') as f:
+                self._ir_codes2 = json5.load(f)
 
-        with open(commands_path2, 'r') as f:
-            self._ir_codes2 = json5.load(f)
-
-        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
+            self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
 
     @property
     def unique_id(self) -> str:
@@ -139,8 +135,7 @@ class TuyaIrClimateEntity(ClimateEntity):
     async def _set_state(self):
 
         if self._device_api is None:
-            _LOGGER.error("DeviceApi is not initialized")
-            return
+            self._setup_tuya()
 
         self.async_write_ha_state()
 
