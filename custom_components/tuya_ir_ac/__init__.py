@@ -1,12 +1,11 @@
 from .const import DOMAIN
-import asyncio
 
 async def async_setup_entry(hass, entry):
     """Kurulum giriş noktası."""
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = entry
 
-    hass.config_entries.async_setup_platforms(entry, ["climate"])
+    await hass.config_entries.async_forward_entry_setups(entry, ["climate"])
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
