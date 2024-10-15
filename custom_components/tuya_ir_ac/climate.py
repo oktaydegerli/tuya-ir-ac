@@ -51,7 +51,8 @@ class TuyaIrClimateEntity(ClimateEntity):
         with open(commands_path2, 'r') as f:
             self._ir_codes2 = json5.load(f)
 
-        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
+        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key)
+        self._device_api.set_version(self._device_version)
 
     @property
     def unique_id(self) -> str:
