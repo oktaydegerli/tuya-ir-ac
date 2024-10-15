@@ -15,6 +15,10 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     ac_name = config_entry.options.get(CONF_AC_NAME, config_entry.data.get(CONF_AC_NAME))
+
+    _LOGGER.error("Error name: %s", ac_name)
+    return
+
     device_id = config_entry.options.get(CONF_DEVICE_ID, config_entry.data.get(CONF_DEVICE_ID))
     device_local_key = config_entry.options.get(CONF_DEVICE_LOCAL_KEY, config_entry.data.get(CONF_DEVICE_LOCAL_KEY))
     device_ip = config_entry.options.get(CONF_DEVICE_IP, config_entry.data.get(CONF_DEVICE_IP))
@@ -51,8 +55,8 @@ class TuyaIrClimateEntity(ClimateEntity):
         with open(commands_path2, 'r') as f:
             self._ir_codes2 = json5.load(f)
 
-        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key)
-        self._device_api.set_version(self._device_version)
+        #self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key)
+        #self._device_api.set_version(self._device_version)
 
     @property
     def unique_id(self) -> str:
