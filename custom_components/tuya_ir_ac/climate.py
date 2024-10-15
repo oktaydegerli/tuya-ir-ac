@@ -183,6 +183,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             self.run_with_lock(lambda: self._set_temperature_critical(temperature))
 
     def _set_temperature_critical(self, temperature):
+        self._is_on = True
         self._temp = int(temperature)
         self._api.set_state(self._is_on, self._hvac_mode, self._temp, self._fan_mode)
 
@@ -192,6 +193,11 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             self.run_with_lock(lambda: self._set_hvac_mode_critical(hvac_mode))
 
     def _set_hvac_mode_critical(self, hvac_mode):
+        if hvac_mode == HVACMode.OFF or hvac_mode == None:
+            self._is_on = False
+            hvac_mode = HVACMode.OFF
+        else:
+            self._is_on = True
         self._hvac_mode = hvac_mode
         self._api.set_state(self._is_on, self._hvac_mode, self._temp, self._fan_mode)
 
@@ -200,6 +206,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             self.run_with_lock(lambda: self._set_fan_mode_critical(fan_mode))
 
     def _set_fan_mode_critical(self, fan_mode):
+        self._is_on = True
         self._fan_mode = fan_mode
         self._api.set_state(self._is_on, self._hvac_mode, self._temp, self._fan_mode)
 
