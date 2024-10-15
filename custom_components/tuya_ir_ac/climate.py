@@ -2,7 +2,7 @@ from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (HVACMode, ClimateEntityFeature)
 from homeassistant.const import (ATTR_TEMPERATURE, UnitOfTemperature)
 from .const import DOMAIN, CONF_AC_NAME, CONF_DEVICE_ID, CONF_DEVICE_LOCAL_KEY, CONF_DEVICE_IP, CONF_DEVICE_VERSION, CONF_DEVICE_MODEL
-
+from threading import Lock
 import tinytuya
 import os
 import json5
@@ -34,6 +34,7 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._attr_fan_mode = "Orta"
         self._attr_current_temperature = 20
         self._attr_target_temperature = 22
+        self._mutex = Lock()
         
         self._setup_tuya()
 
@@ -108,25 +109,32 @@ class TuyaIrClimateEntity(ClimateEntity):
     
     async def async_set_hvac_mode(self, hvac_mode: HVACMode):
         self._attr_hvac_mode = hvac_mode
-        self._set_state()
+        self.run_with_lock(lambda: self._set_state())
 
     async def async_set_fan_mode(self, fan_mode: str):
         self._attr_fan_mode = fan_mode
-        self._set_state()
+        self.run_with_lock(lambda: self._set_state())
     
     async def async_set_temperature(self, **kwargs):
         target_temperature = kwargs.get('temperature')
         if target_temperature is not None:
             self._attr_target_temperature = target_temperature
-            self._set_state()
+            self.run_with_lock(lambda: self._set_state())
 
     async def async_turn_on(self):
         self._attr_is_on = True
-        self._set_state()
+        self.run_with_lock(lambda: self._set_state())
 
     async def async_turn_off(self):
         self._attr_is_on = False
-        self._set_state()
+        self.run_with_lock(lambda: self._set_state())
+
+    def run_with_lock(self, critical_section_fn):
+        self._mutex.acquire(True)
+        try:
+            critical_section_fn()
+        finally:
+            self._mutex.release() 
 
     def _set_state(self):
 
@@ -201,4 +209,4 @@ class TuyaIrClimateEntity(ClimateEntity):
         res = self._device_api.send(payload)
 
         if res is not None:
-            _LOGGER.error("Send IR command failed with %s", res)        
+            _LOGGER.error("Send IR command failed with %s", res)   
