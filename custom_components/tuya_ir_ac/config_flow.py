@@ -9,8 +9,8 @@ class TuyaIrClimateConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """İlk adımı yönet."""
         errors = {}
         if user_input is not None:
-            # API anahtarını burada doğrulayabilirsiniz
-            return self.async_create_entry(title="Custom Climate", data=user_input)
+            # TODO: Kullanıcı girdilerini doğrula
+            return self.async_create_entry(title=user_input[CONF_AC_NAME], data=user_input)
 
         data_schema = vol.Schema({
             vol.Required(CONF_AC_NAME): str,

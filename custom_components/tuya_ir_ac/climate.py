@@ -28,6 +28,10 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._attr_target_temperature = 22
 
     @property
+    def unique_id(self) -> str:
+        return f"{self._device_id}_{self._ac_name}"
+
+    @property
     def name(self):
         return self._ac_name
 
