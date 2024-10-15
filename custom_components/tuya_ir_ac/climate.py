@@ -41,9 +41,6 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._lock = threading.Lock()
         self._device_api = None
 
-        threading.Thread(target=self._setup_tuya).start()
-
-    def _setup_tuya(self):
         current_dir = os.path.dirname(__file__)
         commands_path1 = os.path.join(current_dir, './MSZ-GE25VA.json5')
         commands_path2 = os.path.join(current_dir, './MSC-GE35VB.json5')
