@@ -20,12 +20,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     device_version = config_entry.data.get(CONF_DEVICE_VERSION)
     device_model = config_entry.data.get(CONF_DEVICE_MODEL)
 
-    _LOGGER.error("Error ac_name: %s", ac_name)
-    _LOGGER.error("Error device_id: %s", device_id)
-    _LOGGER.error("Error device_ip: %s", device_ip)
-    _LOGGER.error("Error device_version: %s", device_version)
-    _LOGGER.error("Error device_model: %s", device_model)
-
     entity = TuyaIrClimateEntity(ac_name, device_id, device_local_key, device_ip, device_version, device_model)
 
     async_add_entities([entity])
@@ -56,8 +50,23 @@ class TuyaIrClimateEntity(ClimateEntity):
         with open(commands_path2, 'r') as f:
             self._ir_codes2 = json5.load(f)
 
-        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key)
-        self._device_api.set_version(self._device_version)
+        if self._device_id is None:
+            _LOGGER.error("Error device_id: %s", self._device_id)
+            return
+
+        if self._device_ip is None:
+            _LOGGER.error("Error device_ip: %s", self._device_ip)
+            return
+
+        if self._device_local_key is None:
+            _LOGGER.error("Error _device_local_key: %s", self._device_local_key)
+            return
+        
+        if self._device_version is None:
+            _LOGGER.error("Error device_version: %s", self._device_version)
+            return
+
+        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", self._device_version)
 
     @property
     def unique_id(self) -> str:
