@@ -36,8 +36,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     async_add_entities([entity])
 
-    hass.async_create_task(entity.async_setup_tuya())
-
 class TuyaIrClimateEntity(ClimateEntity):
     def __init__(self, ac_name, device_id, device_local_key, device_ip, device_version, device_model):
         self._enable_turn_on_off_backwards_compatibility = False
@@ -54,8 +52,9 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._lock = threading.Lock()
         self._device_api = None
 
-    async def async_setup_tuya(self):
-        await asyncio.sleep(0)
+        threading.Thread(target=self._setup_tuya).start()
+
+    def _setup_tuya(self):
         self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)    
 
     @property
