@@ -65,22 +65,18 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         self._name = name
         self._is_on = False
         self._hvac_mode = HVACMode.OFF
-        self._fan_mode = "Düşük"
+        self._fan_mode = "Orta"
         self._temp = 25
-
         self._device_id = device_id
         self._device_local_key = device_local_key
         self._device_ip = device_ip
         self._device_version = float('3.3' if device_version is None else device_version)
         self._device_api = None
         self._device_model = device_model
-
         self._mutex = Lock()
 
     def _setup_tuya(self):
-        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._local_key)
-        self._device_api.set_version(self._device_version)
-
+        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 6, self._device_version)
 
     async def async_added_to_hass(self):
         
@@ -94,28 +90,15 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
             self._is_on = prev.attributes.get("internal_is_on", False)
             self._hvac_mode = prev.attributes.get("internal_hvac_mode", HVACMode.OFF)
             self._temp = prev.attributes.get("internal_temp", 25)
-            self._fan_mode = prev.attributes.get("internal_fan_mode", "Düşük")
-
-            if self._is_on is None:
-                self._is_on = False
-
-            if self._hvac_mode is None:
-                self._hvac_mode = HVACMode.OFF
-
-            if self._temp is None:
-                self._temp = 25
-
-            if self._fan_mode is None:
-                self._fan_mode = 'Düşük'
-
+            self._fan_mode = prev.attributes.get("internal_fan_mode", "Orta")
 
     @property
     def extra_state_attributes(self):
         return {
             "internal_is_on": self._is_on,
             "internal_hvac_mode": self._hvac_mode,
+            "internal_temp": self._temp,            
             "internal_fan_mode": self._fan_mode,
-            "internal_temp": self._temp,
         }
 
     @property
@@ -239,51 +222,49 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         if self._is_on == True and (self._hvac_mode == HVACMode.OFF or self._hvac_mode == None):
             self._hvac_mode = HVACMode.HEAT_COOL
 
-        hvac_mode_key = None
 
         if self._hvac_mode == HVACMode.OFF or self._is_on == False:
             hvac_mode_key = "off"
 
-        if self._hvac_mode == HVACMode.HEAT_COOL or self._hvac_mode == HVACMode.AUTO:
+        elif self._hvac_mode == HVACMode.HEAT_COOL or self._hvac_mode == HVACMode.AUTO:
             hvac_mode_key = "auto"
 
-        if self._hvac_mode == HVACMode.COOL:
+        elif self._hvac_mode == HVACMode.COOL:
             hvac_mode_key = "cool"
 
-        if self._hvac_mode == HVACMode.HEAT:
+        elif self._hvac_mode == HVACMode.HEAT:
             hvac_mode_key = "heat"
 
-        if self._hvac_mode == HVACMode.DRY:
+        elif self._hvac_mode == HVACMode.DRY:
             hvac_mode_key = "dry"
 
-        if self._hvac_mode == HVACMode.FAN_ONLY:
+        elif self._hvac_mode == HVACMode.FAN_ONLY:
             hvac_mode_key = "fan"
 
-        if hvac_mode_key == None:
+        else:
             msg = 'Mode must be one of off, cool, heat, dry, fan or auto'
             raise Exception(msg)
-        
-        fan_mode_key = None
+
 
         if self._fan_mode == 'Otomatik':
             fan_mode_key = 'auto'
 
-        if self._fan_mode == 'Sessiz':
+        elif self._fan_mode == 'Sessiz':
             fan_mode_key = 'quiet'
 
-        if self._fan_mode == 'Düşük':
+        elif self._fan_mode == 'Düşük':
             fan_mode_key = 'low'
 
-        if self._fan_mode == 'Orta':
+        elif self._fan_mode == 'Orta':
             fan_mode_key = 'medium'
 
-        if self._fan_mode == 'Yüksek':
+        elif self._fan_mode == 'Yüksek':
             fan_mode_key = 'high'
 
-        if self._fan_mode == 'En Yüksek':
+        elif self._fan_mode == 'En Yüksek':
             fan_mode_key = 'highest'                    
 
-        if fan_mode_key is None:
+        else:
             msg = 'Fan mode must be one of Otomatik, Sessiz, Düşük, Orta, Yüksek or En Yüksek'
             raise Exception(msg)
 
