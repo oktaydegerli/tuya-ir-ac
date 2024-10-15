@@ -65,10 +65,10 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
         prev = await self.async_get_last_state()
         
         if prev:
-            self._is_on = prev.attributes.get("internal_is_on", None)
-            self._hvac_mode = prev.attributes.get("internal_mode", None)
-            self._temp = prev.attributes.get("internal_temp", None)
-            self._fan_mode = prev.attributes.get("internal_fan_mode", None)
+            self._is_on = prev.attributes.get("internal_is_on", False)
+            self._hvac_mode = prev.attributes.get("internal_hvac_mode", HVACMode.OFF)
+            self._temp = prev.attributes.get("internal_temp", 25)
+            self._fan_mode = prev.attributes.get("internal_fan_mode", "Düşük")
 
             if self._is_on is None:
                 self._is_on = False
@@ -87,7 +87,7 @@ class TuyaIRAC(RestoreEntity, ClimateEntity):
     def extra_state_attributes(self):
         return {
             "internal_is_on": self._is_on,
-            "internal_mode": self._hvac_mode,
+            "internal_hvac_mode": self._hvac_mode,
             "internal_fan_mode": self._fan_mode,
             "internal_temp": self._temp,
         }
