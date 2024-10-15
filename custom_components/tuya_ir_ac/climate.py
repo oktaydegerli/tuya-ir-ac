@@ -1,15 +1,15 @@
 from homeassistant.components.climate import ClimateEntity
-from homeassistant.components.climate.const import (
-    HVAC_MODE_HEAT,
-    SUPPORT_TARGET_TEMPERATURE,
-)
+from homeassistant.components.climate.const import (HVAC_MODE_HEAT, SUPPORT_TARGET_TEMPERATURE)
 from homeassistant.const import TEMP_CELSIUS
+from .const import DOMAIN, CONF_API_KEY
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-    async_add_entities([TuyaIrClimateEntity()])
+    api_key = hass.data[DOMAIN][config_entry.entry_id][CONF_API_KEY]
+    async_add_entities([TuyaIrClimateEntity(api_key)])
 
 class TuyaIrClimateEntity(ClimateEntity):
-    def __init__(self):
+    def __init__(self, api_key):
+        self._api_key = api_key
         self._attr_name = "Air Conditioner"
         self._attr_temperature_unit = TEMP_CELSIUS
         self._attr_hvac_mode = HVAC_MODE_HEAT
