@@ -3,6 +3,11 @@ from homeassistant.components.climate.const import (HVACMode, ClimateEntityFeatu
 from homeassistant.const import (ATTR_TEMPERATURE, UnitOfTemperature)
 from .const import DOMAIN, CONF_AC_NAME, CONF_DEVICE_ID, CONF_DEVICE_LOCAL_KEY, CONF_DEVICE_IP, CONF_DEVICE_VERSION, CONF_DEVICE_MODEL
 
+import tinytuya
+import os
+import json5
+import codecs
+
 async def async_setup_entry(hass, config_entry, async_add_entities):
     ac_name = hass.data[DOMAIN][config_entry.entry_id][CONF_AC_NAME]
     device_id = hass.data[DOMAIN][config_entry.entry_id][CONF_DEVICE_ID]
@@ -26,6 +31,25 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._attr_fan_mode = "Orta"
         self._attr_current_temperature = 20
         self._attr_target_temperature = 22
+        
+        self._setup_tuya()
+
+    async def _setup_tuya(self): 
+        self._device_api = None
+        self._ir_codes1 = None
+        self._ir_codes2 = None
+
+        current_dir = os.path.dirname(__file__)
+        commands_path1 = os.path.join(current_dir, './ac-commands-1.json5')
+        commands_path2 = os.path.join(current_dir, './ac-commands-2.json5')
+
+        with open(commands_path1, 'r') as f:
+            self._ir_codes1 = json5.load(f)
+
+        with open(commands_path2, 'r') as f:
+            self._ir_codes2 = json5.load(f)
+
+        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
 
     @property
     def unique_id(self) -> str:
@@ -81,24 +105,92 @@ class TuyaIrClimateEntity(ClimateEntity):
     
     async def async_set_hvac_mode(self, hvac_mode: HVACMode):
         self._attr_hvac_mode = hvac_mode
-        self.async_write_ha_state()
+        self._set_state()
 
     async def async_set_fan_mode(self, fan_mode: str):
         self._attr_fan_mode = fan_mode
-        self.async_write_ha_state()
+        self._set_state()
     
     async def async_set_temperature(self, **kwargs):
         target_temperature = kwargs.get('temperature')
         if target_temperature is not None:
             self._attr_target_temperature = target_temperature
-            # Burada API çağrısı yaparak gerçek cihaza komutu gönderebilirsiniz
-            # Örneğin: await self._set_device_temperature(target_temperature)
-            self.async_write_ha_state()
+            self._set_state()
 
     async def async_turn_on(self):
         self._attr_is_on = True
-        self.async_write_ha_state()
+        self._set_state()
 
     async def async_turn_off(self):
         self._attr_is_on = False
+        self._set_state()
+
+    async def _set_state(self):
+
+        if self._attr_is_on == True and (self._attr_hvac_mode == HVACMode.OFF or self._attr_hvac_mode == None):
+            self._attr_hvac_mode = HVACMode.HEAT_COOL
+
         self.async_write_ha_state()
+
+        if self._attr_hvac_mode == HVACMode.OFF or self._attr_is_on == False:
+            hvac_mode_key = "off"
+
+        elif self._attr_hvac_mode == HVACMode.HEAT_COOL or self._attr_hvac_mode == HVACMode.AUTO:
+            hvac_mode_key = "auto"
+
+        elif self._attr_hvac_mode == HVACMode.COOL:
+            hvac_mode_key = "cool"
+
+        elif self._attr_hvac_mode == HVACMode.HEAT:
+            hvac_mode_key = "heat"
+
+        elif self._attr_hvac_mode == HVACMode.DRY:
+            hvac_mode_key = "dry"
+
+        elif self._attr_hvac_mode == HVACMode.FAN_ONLY:
+            hvac_mode_key = "fan"
+
+        else:
+            msg = 'Mode must be one of off, cool, heat, dry, fan or auto'
+            raise Exception(msg)
+
+
+        if self._attr_fan_mode == 'Otomatik':
+            fan_mode_key = 'auto'
+
+        elif self._attr_fan_mode == 'Sessiz':
+            fan_mode_key = 'quiet'
+
+        elif self._attr_fan_mode == 'Düşük':
+            fan_mode_key = 'low'
+
+        elif self._attr_fan_mode == 'Orta':
+            fan_mode_key = 'medium'
+
+        elif self._attr_fan_mode == 'Yüksek':
+            fan_mode_key = 'high'
+
+        elif self._attr_fan_mode == 'En Yüksek':
+            fan_mode_key = 'highest'                    
+
+        else:
+            msg = 'Fan mode must be one of Otomatik, Sessiz, Düşük, Orta, Yüksek or En Yüksek'
+            raise Exception(msg)
+
+        if hvac_mode_key == "off":
+            if self._device_model == 'MSZ-GE25VA':
+                ir_code = self._ir_codes1["off"]
+            else:
+                ir_code = self._ir_codes2["off"]
+        else: 
+            if self._device_model == 'MSZ-GE25VA':
+                ir_code = self._ir_codes1[hvac_mode_key][fan_mode_key][str(self._temp)]
+            else:
+                ir_code = self._ir_codes2[hvac_mode_key][fan_mode_key][str(self._temp)]
+
+        b64 = codecs.encode(codecs.decode(ir_code, 'hex'), 'base64').decode()
+        
+        payload = self._device_api.generate_payload(tinytuya.CONTROL, {"1": "study_key", "7": b64})
+        
+        self._device_api.send(payload)
+        
