@@ -9,6 +9,7 @@ import json5
 import codecs
 import logging
 import threading
+import asyncio
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -54,10 +55,8 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._device_api = None
 
     async def async_setup_tuya(self):
-        await self.hass.async_add_executor_job(self._setup_tuya_sync)
-
-    def _setup_tuya_sync(self):
-        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
+        await asyncio.sleep(0)
+        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)    
 
     @property
     def unique_id(self) -> str:
