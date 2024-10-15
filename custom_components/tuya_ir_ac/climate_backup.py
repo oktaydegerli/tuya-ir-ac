@@ -98,9 +98,7 @@ class TuyaIrClimate(RestoreEntity, ClimateEntity):
             "internal_fan_mode": self._fan_mode,
         }
 
-    @property
-    def name(self):
-        return self._name
+
 
     @property
     def unique_id(self) -> str:
@@ -110,49 +108,17 @@ class TuyaIrClimate(RestoreEntity, ClimateEntity):
     def should_poll(self):
         return False
 
-    @property
-    def min_temp(self):
-        return 16
 
-    @property
-    def max_temp(self):
-        return 31
 
-    @property
-    def temperature_unit(self):
-        return UnitOfTemperature.CELSIUS
 
-    @property
-    def current_temperature(self):
-        return self._temp
 
-    @property
-    def target_temperature(self):
-        return self._temp
 
-    @property
-    def target_temperature_step(self):
-        return 1
 
-    @property
-    def hvac_mode(self):
-        return self._hvac_mode
 
-    @property
-    def hvac_modes(self):
-        return [HVACMode.OFF, HVACMode.COOL, HVACMode.FAN_ONLY, HVACMode.DRY, HVACMode.HEAT, HVACMode.HEAT_COOL]
 
-    @property
-    def fan_mode(self):
-        return self._fan_mode
 
-    @property
-    def fan_modes(self):
-        return ['Otomatik', 'Sessiz', 'Düşük', 'Orta', 'Yüksek', 'En Yüksek']
 
-    @property
-    def supported_features(self):
-        return ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.FAN_MODE | ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF
+
 
 
     def run_with_lock(self, critical_section_fn):
