@@ -7,6 +7,9 @@ import tinytuya
 import os
 import json5
 import codecs
+import logging
+
+_LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     ac_name = hass.data[DOMAIN][config_entry.entry_id][CONF_AC_NAME]
@@ -127,6 +130,9 @@ class TuyaIrClimateEntity(ClimateEntity):
 
     def _set_state(self):
 
+        if self._device_api is None:
+            _LOGGER.error("DeviceApi is not initialized")
+
         if self._attr_is_on == True and (self._attr_hvac_mode == HVACMode.OFF or self._attr_hvac_mode == None):
             self._attr_hvac_mode = HVACMode.HEAT_COOL
 
@@ -192,5 +198,7 @@ class TuyaIrClimateEntity(ClimateEntity):
         
         payload = self._device_api.generate_payload(tinytuya.CONTROL, {"1": "study_key", "7": b64})
         
-        self._device_api.send(payload)
-        
+        res = self._device_api.send(payload)
+
+        if res is not None:
+            _LOGGER.error("Send IR command failed with %s", res)        
