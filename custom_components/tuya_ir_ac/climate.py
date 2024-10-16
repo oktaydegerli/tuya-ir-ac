@@ -183,13 +183,9 @@ class TuyaIrClimateEntity(ClimateEntity):
         payload = self._device_api.generate_payload(tinytuya.CONTROL, {"1": "study_key", "7": b64})
         
         with self._lock:
-            res = await self.hass.async_add_executor_job(self._send_payload, payload)
-
-        if res is not None:
-            _LOGGER.error("Error sending payload: %s", res)
-            return
+            await self.hass.async_add_executor_job(self._send_payload, payload)
     
-    def _send_payload(self, payload):
+    async def _send_payload(self, payload):
         if self._device_api is None:
             self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
-        return self._device_api.send(payload)
+        self._device_api.send(payload)
