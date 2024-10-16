@@ -52,13 +52,11 @@ class TuyaIrClimateEntity(ClimateEntity):
             IR_CODES = {}
 
             current_dir = os.path.dirname(__file__)
-            commands_path1 = os.path.join(current_dir, './MSZ-GE25VA.json5')
-            commands_path2 = os.path.join(current_dir, './MSC-GE35VB.json5')
 
-            with open(commands_path1, 'r') as f:
+            with open(os.path.join(current_dir, './MSZ-GE25VA.json5'), 'r') as f:
                 IR_CODES["MSZ-GE25VA"] = json5.load(f)
 
-            with open(commands_path2, 'r') as f:
+            with open(os.path.join(current_dir, './MSC-GE35VB.json5'), 'r') as f:
                 IR_CODES["MSC-GE35VB"] = json5.load(f)
         
         if self._device_api is None:
@@ -184,11 +182,11 @@ class TuyaIrClimateEntity(ClimateEntity):
         else:
             msg = 'Fan mode must be one of Otomatik, Sessiz, Düşük, Orta, Yüksek or En Yüksek'
             raise Exception(msg)
-
+        
         if hvac_mode_key == "off":
-            ir_code = IR_CODES[self._device_model]["off"]
+            ir_code = IR_CODES.get(self._device_model)["off"]
         else:
-            ir_code = IR_CODES[self._device_model][hvac_mode_key][fan_mode_key][str(self._attr_target_temperature)]
+            ir_code = IR_CODES.get(self._device_model)[hvac_mode_key][fan_mode_key][str(self._attr_target_temperature)]
 
         b64 = codecs.encode(codecs.decode(ir_code, 'hex'), 'base64').decode()
         
