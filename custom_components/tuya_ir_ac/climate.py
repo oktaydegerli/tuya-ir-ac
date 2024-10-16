@@ -50,9 +50,6 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._lock = threading.Lock()
         self._device_api = None
 
-    def _setup_tuya(self): 
-        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
-
     @property
     def unique_id(self) -> str:
         return f"{self._device_id}_{self._ac_name}"
@@ -192,8 +189,8 @@ class TuyaIrClimateEntity(ClimateEntity):
             _LOGGER.error("Error sending payload: %s", res)
             return
     
-    def _send_payload(self, payload):
+    async def _send_payload(self, payload):
         yield
         if self._device_api is None:
-            self._setup_tuya()
+            self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
         return self._device_api.send(payload)
