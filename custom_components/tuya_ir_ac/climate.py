@@ -46,7 +46,6 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._device_model = device_model
         self._attr_hvac_mode = HVACMode.OFF
         self._attr_fan_mode = "Orta"
-        self._attr_current_temperature = 20
         self._attr_target_temperature = 22
         self._lock = threading.Lock()
         self._device_api = None
@@ -98,7 +97,7 @@ class TuyaIrClimateEntity(ClimateEntity):
     
     @property
     def current_temperature(self):
-        return self._attr_current_temperature
+        return None
 
     @property
     def target_temperature(self):
