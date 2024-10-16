@@ -1,7 +1,7 @@
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import HVACMode, ClimateEntityFeature
 from homeassistant.const import UnitOfTemperature
-from .const import CONF_AC_NAME, CONF_DEVICE_ID, CONF_DEVICE_LOCAL_KEY, CONF_DEVICE_IP, CONF_DEVICE_VERSION, CONF_DEVICE_MODEL
+from .const import DOMAIN, CONF_AC_NAME, CONF_DEVICE_ID, CONF_DEVICE_LOCAL_KEY, CONF_DEVICE_IP, CONF_DEVICE_VERSION, CONF_DEVICE_MODEL
 
 import tinytuya
 import os
@@ -12,19 +12,27 @@ import threading
 
 _LOGGER = logging.getLogger(__name__)
 
-IR_CODES = None
+ir_codes1 = None
+ir_codes2 = None
+
+current_dir = os.path.dirname(__file__)
+commands_path1 = os.path.join(current_dir, './ac-commands-1.json5')
+commands_path2 = os.path.join(current_dir, './ac-commands-2.json5')
+
+with open(commands_path1, 'r') as f:
+    ir_codes1 = json5.load(f)
+
+with open(commands_path2, 'r') as f:
+    ir_codes2 = json5.load(f)
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     ac_name = config_entry.data.get(CONF_AC_NAME)
     device_id = config_entry.data.get(CONF_DEVICE_ID)
-    device_local_key = config_entry.data.get(CONF_DEVICE_LOCAL_KEY)
-    device_ip = config_entry.data.get(CONF_DEVICE_IP)
-    device_version = config_entry.data.get(CONF_DEVICE_VERSION)
+    device_local_key = config_entry.options.get(CONF_DEVICE_LOCAL_KEY, config_entry.data.get(CONF_DEVICE_LOCAL_KEY))
+    device_ip = config_entry.options.get(CONF_DEVICE_IP, config_entry.data.get(CONF_DEVICE_IP))
+    device_version = config_entry.options.get(CONF_DEVICE_VERSION, config_entry.data.get(CONF_DEVICE_VERSION))
     device_model = config_entry.data.get(CONF_DEVICE_MODEL)
-
-    entity = TuyaIrClimateEntity(ac_name, device_id, device_local_key, device_ip, device_version, device_model)
-
-    async_add_entities([entity])
+    async_add_entities([TuyaIrClimateEntity(ac_name, device_id, device_local_key, device_ip, device_version, device_model)])
 
 class TuyaIrClimateEntity(ClimateEntity):
     def __init__(self, ac_name, device_id, device_local_key, device_ip, device_version, device_model):
@@ -37,30 +45,14 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._device_model = device_model
         self._attr_hvac_mode = HVACMode.OFF
         self._attr_fan_mode = "Orta"
-        self._attr_current_temperature = None
+        self._attr_current_temperature = 20
         self._attr_target_temperature = 22
         self._lock = threading.Lock()
         self._device_api = None
         threading.Thread(target=self._setup_tuya).start()
 
-    def _setup_tuya(self):
-
-        global IR_CODES
-
-        if IR_CODES is None:
-
-            IR_CODES = {}
-
-            current_dir = os.path.dirname(__file__)
-
-            with open(os.path.join(current_dir, './MSZ-GE25VA.json5'), 'r') as f:
-                IR_CODES["MSZ-GE25VA"] = json5.load(f)
-
-            with open(os.path.join(current_dir, './MSC-GE35VB.json5'), 'r') as f:
-                IR_CODES["MSC-GE35VB"] = json5.load(f)
-        
-        if self._device_api is None:
-            self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", self._device_version)
+    def _setup_tuya(self): 
+        self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
 
     @property
     def unique_id(self) -> str:
@@ -146,7 +138,7 @@ class TuyaIrClimateEntity(ClimateEntity):
     async def _set_state(self):
 
         if self._device_api is None:
-            _LOGGER.error("Tuya device api is not initialized yet.")
+            _LOGGER.error("DeviceApi is not initialized")
             return
 
         self.async_write_ha_state()
@@ -182,11 +174,17 @@ class TuyaIrClimateEntity(ClimateEntity):
         else:
             msg = 'Fan mode must be one of Otomatik, Sessiz, Düşük, Orta, Yüksek or En Yüksek'
             raise Exception(msg)
-        
+
         if hvac_mode_key == "off":
-            ir_code = IR_CODES.get(self._device_model)["off"]
-        else:
-            ir_code = IR_CODES.get(self._device_model)[hvac_mode_key][fan_mode_key][str(self._attr_target_temperature)]
+            if self._device_model == 'MSZ-GE25VA':
+                ir_code = ir_codes1["off"]
+            else:
+                ir_code = ir_codes2["off"]
+        else: 
+            if self._device_model == 'MSZ-GE25VA':
+                ir_code = ir_codes1[hvac_mode_key][fan_mode_key][str(self._attr_target_temperature)]
+            else:
+                ir_code = ir_codes2[hvac_mode_key][fan_mode_key][str(self._attr_target_temperature)]
 
         b64 = codecs.encode(codecs.decode(ir_code, 'hex'), 'base64').decode()
         
