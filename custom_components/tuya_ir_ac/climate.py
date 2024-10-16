@@ -193,6 +193,7 @@ class TuyaIrClimateEntity(ClimateEntity):
             return
     
     def _send_payload(self, payload):
+        yield
         if self._device_api is None:
             self._setup_tuya()
         return self._device_api.send(payload)
