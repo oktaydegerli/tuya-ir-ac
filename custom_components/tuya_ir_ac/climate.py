@@ -49,7 +49,6 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._attr_target_temperature = 22
         self._lock = threading.Lock()
         self._device_api = None
-        threading.Thread(target=self._setup_tuya).start()
 
     def _setup_tuya(self): 
         self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
@@ -137,10 +136,6 @@ class TuyaIrClimateEntity(ClimateEntity):
 
     async def _set_state(self):
 
-        if self._device_api is None:
-            _LOGGER.error("DeviceApi is not initialized")
-            return
-
         self.async_write_ha_state()
 
         if self._attr_hvac_mode == HVACMode.OFF:
@@ -191,8 +186,13 @@ class TuyaIrClimateEntity(ClimateEntity):
         payload = self._device_api.generate_payload(tinytuya.CONTROL, {"1": "study_key", "7": b64})
         
         with self._lock:
-            res = await self.hass.async_add_executor_job(self._device_api.send, payload)
+            res = await self.hass.async_add_executor_job(self._send_payload, payload)
 
         if res is not None:
             _LOGGER.error("Error sending payload: %s", res)
             return
+    
+    def _send_payload(self, payload):
+        if self._device_api is None:
+            self._setup_tuya()
+        return self._device_api.send(payload)
