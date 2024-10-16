@@ -189,8 +189,7 @@ class TuyaIrClimateEntity(ClimateEntity):
             _LOGGER.error("Error sending payload: %s", res)
             return
     
-    async def _send_payload(self, payload):
-        yield
+    def _send_payload(self, payload):
         if self._device_api is None:
             self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
         return self._device_api.send(payload)
