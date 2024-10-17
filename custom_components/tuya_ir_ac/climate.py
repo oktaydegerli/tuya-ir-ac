@@ -126,7 +126,7 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
     
     @property
     def current_temperature(self):
-        return self._attr_current_temperature
+        return 20
 
     @property
     def target_temperature(self):
