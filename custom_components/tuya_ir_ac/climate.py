@@ -36,7 +36,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     device_version = config_entry.data.get(CONF_DEVICE_VERSION)
     async_add_entities([TuyaIrClimateEntity(ac_name, device_id, device_local_key, device_ip, device_version, device_model)])
 
-class TuyaIrClimateEntity(ClimateEntity):
+class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
     def __init__(self, ac_name, device_id, device_local_key, device_ip, device_version, device_model):
         self._enable_turn_on_off_backwards_compatibility = False
         self._ac_name = ac_name
