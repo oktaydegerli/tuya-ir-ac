@@ -1,6 +1,7 @@
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import HVACMode, ClimateEntityFeature
 from homeassistant.const import UnitOfTemperature
+from homeassistant.helpers.restore_state import RestoreEntity
 from .const import DOMAIN, CONF_AC_NAME, CONF_DEVICE_ID, CONF_DEVICE_LOCAL_KEY, CONF_DEVICE_IP, CONF_DEVICE_VERSION, CONF_DEVICE_MODEL
 
 import tinytuya
@@ -29,10 +30,10 @@ with open(commands_path2, 'r') as file:
 async def async_setup_entry(hass, config_entry, async_add_entities):
     ac_name = config_entry.data.get(CONF_AC_NAME)
     device_id = config_entry.data.get(CONF_DEVICE_ID)
-    device_local_key = config_entry.options.get(CONF_DEVICE_LOCAL_KEY, config_entry.data.get(CONF_DEVICE_LOCAL_KEY))
-    device_ip = config_entry.options.get(CONF_DEVICE_IP, config_entry.data.get(CONF_DEVICE_IP))
-    device_version = config_entry.options.get(CONF_DEVICE_VERSION, config_entry.data.get(CONF_DEVICE_VERSION))
     device_model = config_entry.data.get(CONF_DEVICE_MODEL)
+    device_local_key = config_entry.data.get(CONF_DEVICE_LOCAL_KEY)
+    device_ip = config_entry.data.get(CONF_DEVICE_IP)
+    device_version = config_entry.data.get(CONF_DEVICE_VERSION)
     async_add_entities([TuyaIrClimateEntity(ac_name, device_id, device_local_key, device_ip, device_version, device_model)])
 
 class TuyaIrClimateEntity(ClimateEntity):
@@ -49,6 +50,16 @@ class TuyaIrClimateEntity(ClimateEntity):
         self._attr_target_temperature = 22
         self._lock = threading.Lock()
         self._device_api = None
+
+    async def async_added_to_hass(self):
+
+        await super().async_added_to_hass()
+
+        last_state = await self.async_get_last_state()
+        if last_state is not None:
+            self._attr_hvac_mode = last_state.state
+            self._attr_fan_mode = last_state.attributes.get('fan_mode')
+            self._attr_target_temperature = last_state.attributes.get('temperature')
 
     @property
     def unique_id(self) -> str:
@@ -181,6 +192,9 @@ class TuyaIrClimateEntity(ClimateEntity):
         b64 = codecs.encode(codecs.decode(ir_code, 'hex'), 'base64').decode()
 
         command = {"1": "study_key", "7": b64}
+
+        if self._lock.locked():
+            return
         
         with self._lock:
             await self.hass.async_add_executor_job(self._send_command, command)
