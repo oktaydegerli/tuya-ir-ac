@@ -2,7 +2,8 @@ from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import HVACMode, ClimateEntityFeature
 from homeassistant.const import UnitOfTemperature
 from homeassistant.helpers.restore_state import RestoreEntity
-from .const import DOMAIN, CONF_AC_NAME, CONF_DEVICE_ID, CONF_DEVICE_LOCAL_KEY, CONF_DEVICE_IP, CONF_DEVICE_VERSION, CONF_DEVICE_MODEL
+from homeassistant.helpers.event import async_track_state_change
+from .const import DOMAIN, CONF_AC_NAME, CONF_DEVICE_ID, CONF_DEVICE_LOCAL_KEY, CONF_DEVICE_IP, CONF_DEVICE_VERSION, CONF_DEVICE_MODEL, CONF_TEMPERATURE_SENSOR
 
 import tinytuya
 import os
@@ -34,10 +35,12 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     device_local_key = config_entry.data.get(CONF_DEVICE_LOCAL_KEY)
     device_ip = config_entry.data.get(CONF_DEVICE_IP)
     device_version = config_entry.data.get(CONF_DEVICE_VERSION)
-    async_add_entities([TuyaIrClimateEntity(ac_name, device_id, device_local_key, device_ip, device_version, device_model)])
+    temperature_sensor = config_entry.data.get(CONF_TEMPERATURE_SENSOR)
+    
+    async_add_entities([TuyaIrClimateEntity(ac_name, device_id, device_local_key, device_ip, device_version, device_model, temperature_sensor)])
 
 class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
-    def __init__(self, ac_name, device_id, device_local_key, device_ip, device_version, device_model):
+    def __init__(self, ac_name, device_id, device_local_key, device_ip, device_version, device_model, temperature_sensor):
         self._enable_turn_on_off_backwards_compatibility = False
         self._ac_name = ac_name
         self._device_id = device_id
@@ -45,9 +48,11 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
         self._device_ip = device_ip
         self._device_version = device_version
         self._device_model = device_model
+        self._temperature_sensor = temperature_sensor
         self._attr_hvac_mode = HVACMode.OFF
         self._attr_fan_mode = "Orta"
         self._attr_target_temperature = 22
+        self._attr_current_temperature = None
         self._lock = threading.Lock()
         self._device_api = None
 
@@ -60,6 +65,19 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
             self._attr_hvac_mode = last_state.state
             self._attr_fan_mode = last_state.attributes.get('fan_mode')
             self._attr_target_temperature = last_state.attributes.get('temperature')
+
+        if self._temperature_sensor:
+            async_track_state_change(self.hass, self._temperature_sensor, self._async_sensor_changed)
+            self.async_schedule_update_ha_state(force_refresh=True)
+
+    async def _async_sensor_changed(self, entity_id, old_state, new_state):
+        if new_state is None:
+            return
+        try:
+                self._attr_current_temperature = float(new_state.state)
+                self.async_write_ha_state()
+        except (TypeError, ValueError) as e:
+                _LOGGER.warning(f"Geçersiz sıcaklık sensörü değeri: {new_state.state} - Hata: {e}")
 
     @property
     def unique_id(self) -> str:
@@ -108,7 +126,7 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
     
     @property
     def current_temperature(self):
-        return None
+        return self._attr_current_temperature
 
     @property
     def target_temperature(self):
