@@ -193,7 +193,7 @@ class TuyaIrClimateEntity(ClimateEntity):
 
         command = {"1": "study_key", "7": b64}
 
-        if self._lock.locked():
+        if self._lock.locked() and self._device_api is None:
             return
         
         with self._lock:
