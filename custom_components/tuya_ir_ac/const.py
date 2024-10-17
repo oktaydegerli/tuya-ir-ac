@@ -5,7 +5,7 @@ CONF_DEVICE_LOCAL_KEY = "device_local_key"
 CONF_DEVICE_IP = "device_ip"
 CONF_DEVICE_VERSION = "device_version"
 CONF_DEVICE_MODEL = "device_model"
-CONF_TEMPERATURE_SENSOR = None
+CONF_TEMPERATURE_SENSOR = "temperature_sensor"
 
 DEVICE_MODELS = {
     "MSZ-GE25VA": "MSZ-GE25VA",    
