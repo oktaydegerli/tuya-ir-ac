@@ -196,6 +196,7 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
             msg = 'Fan mode must be one of Otomatik, Sessiz, Düşük, Orta, Yüksek or En Yüksek'
             raise Exception(msg)
 
+
         if hvac_mode_key == "off":
             if self._device_model == 'MSZ-GE25VA':
                 ir_code = ir_codes1["off"]
