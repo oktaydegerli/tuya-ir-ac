@@ -11,7 +11,7 @@ import os
 import json
 import codecs
 import logging
-import threading
+import asyncio
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
         self._attr_fan_mode = "Orta"
         self._attr_target_temperature = 22
         self._attr_current_temperature = 20
-        self._lock = threading.Lock()
+        self._device_api_lock = asyncio.Lock()
         self._device_api = None
         self._unsub_state_changed = None
         self._ir_codes = {}
@@ -75,10 +75,18 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
             raise ValueError(f"IR kod dosyası bulunamadı: {self._commands_path}")
 
     async def _async_get_device_api(self):
-        async with self._lock:
+        async with self._device_api_lock:  # asyncio.Lock kullanın
             if self._device_api is None:
                 try:
-                    self._device_api = await self.hass.async_add_executor_job(tinytuya.Device, self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
+                    self._device_api = await self.hass.async_add_executor_job(
+                        tinytuya.Device,
+                        self._device_id,
+                        self._device_ip,
+                        self._device_local_key,
+                        "default",
+                        5,
+                        self._device_version
+                    )
                 except Exception as e:
                     _LOGGER.error(f"Tuya cihazı oluşturma hatası: {e}")
                     return None
