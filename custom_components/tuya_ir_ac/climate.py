@@ -48,7 +48,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         async_add_entities([entity])
         return True
     except Exception as e:
-        _LOGGER.error(f"Tuya cihazı oluşturma hatası: {e}")
+        _LOGGER.error(f"Cihaz oluşturma hatası: {e}")
         return False
     
 
