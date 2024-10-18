@@ -2,7 +2,7 @@ from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import HVACMode, ClimateEntityFeature
 from homeassistant.const import UnitOfTemperature
 from homeassistant.helpers.restore_state import RestoreEntity
-from homeassistant.helpers.event import async_track_state_change
+from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers import config_validation as cv
 from .const import DOMAIN, CONF_AC_NAME, CONF_DEVICE_ID, CONF_DEVICE_LOCAL_KEY, CONF_DEVICE_IP, CONF_DEVICE_VERSION, CONF_DEVICE_MODEL, CONF_TEMPERATURE_SENSOR
 
@@ -103,21 +103,24 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
             self._attr_target_temperature = last_state.attributes.get('temperature')
 
         if self._temperature_sensor:
-            self._unsub_state_changed = async_track_state_change(self.hass, self._temperature_sensor, self._async_sensor_changed)
+            self._unsub_state_changed = async_track_state_change_event(self.hass, [self._temperature_sensor], self._async_sensor_changed)
 
     async def async_will_remove_from_hass(self):
         if self._unsub_state_changed:
             self._unsub_state_changed()
             self._unsub_state_changed = None      
 
-    async def _async_sensor_changed(self, entity_id, old_state, new_state):
+    async def _async_sensor_changed(self, event):
+        """Sıcaklık sensörünün durumu değiştiğinde çağrılır."""
+        new_state = event.data.get("new_state")  # new_state'i event verisinden al
         if new_state is None:
             return
+
         try:
-                self._attr_current_temperature = float(new_state.state)
-                self.async_write_ha_state()
+            self._attr_current_temperature = float(new_state.state)
+            self.async_write_ha_state()
         except (TypeError, ValueError) as e:
-                _LOGGER.warning(f"Geçersiz sıcaklık sensörü değeri: {new_state.state} - Hata: {e}")
+            _LOGGER.warning(f"Geçersiz sıcaklık sensörü değeri: {new_state.state} - Hata: {e}")
 
 
     @property
