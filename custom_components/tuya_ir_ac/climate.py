@@ -12,10 +12,8 @@ import os
 import json
 import codecs
 import logging
-import asyncio
 
 _LOGGER = logging.getLogger(__name__)
-
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
 
@@ -43,55 +41,40 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         )
         return False
     
-    entity = TuyaIrClimateEntity(hass, ac_name, device_id, device_local_key, device_ip, device_version, device_model, temperature_sensor)
-    async_add_entities([entity]) 
-    return True
+    try:
+        device = await hass.async_add_executor_job(tinytuya.Device, device_id, device_ip, device_local_key, "default", 5, device_version)
+        entity = TuyaIrClimateEntity(hass, ac_name, device, device_model, temperature_sensor)
+        entity._ir_codes = await entity.async_load_ir_codes()
+        async_add_entities([entity])
+        return True
+    except Exception as e:
+        _LOGGER.error(f"Tuya cihazı oluşturma hatası: {e}")
+        return False
+    
 
 class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
-    def __init__(self, hass, ac_name, device_id, device_local_key, device_ip, device_version, device_model, temperature_sensor):
+    def __init__(self, hass, ac_name, device, temperature_sensor):
         self._enable_turn_on_off_backwards_compatibility = False
         self.hass = hass
         self._ac_name = ac_name
-        self._device_id = device_id
-        self._device_local_key = device_local_key
-        self._device_ip = device_ip
-        self._device_version = device_version
-        self._device_model = device_model
+        self._device = device
         self._temperature_sensor = temperature_sensor
         self._attr_hvac_mode = HVACMode.OFF
         self._attr_fan_mode = "Orta"
         self._attr_target_temperature = 22
         self._attr_current_temperature = None
-        self._device_api_lock = asyncio.Lock()
         self._device_api = None
         self._unsub_state_changed = None
         self._ir_codes = {}
         self._commands_path = os.path.join(hass.config.path(), "custom_components", DOMAIN, f'{self._device_model}.json')
-
+        
+    async def async_load_ir_codes(self):
         try:
-            with open(self._commands_path, 'r') as file:
-                self._ir_codes = json.load(file)
+            result = await self.hass.async_add_executor_job(lambda: json.load(open(self._commands_path, 'r')))
+            return result
         except FileNotFoundError:
             _LOGGER.error(f"IR kod dosyası bulunamadı: {self._commands_path}")
             raise ValueError(f"IR kod dosyası bulunamadı: {self._commands_path}")
-
-    async def _async_get_device_api(self):
-        async with self._device_api_lock:  # asyncio.Lock kullanın
-            if self._device_api is None:
-                try:
-                    self._device_api = await self.hass.async_add_executor_job(
-                        tinytuya.Device,
-                        self._device_id,
-                        self._device_ip,
-                        self._device_local_key,
-                        "default",
-                        5,
-                        self._device_version
-                    )
-                except Exception as e:
-                    _LOGGER.error(f"Tuya cihazı oluşturma hatası: {e}")
-                    return None
-            return self._device_api
 
     async def async_added_to_hass(self):
 
@@ -116,13 +99,12 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
         new_state = event.data.get("new_state")
         if new_state is None or new_state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE, "unknown", "unavailable", ""): # None ve diğer geçersiz durumları kontrol et
             return
-
+        
         try:
             self._attr_current_temperature = float(new_state.state)
-            self.async_write_ha_state()
-        except ValueError as e: # Sadece ValueError yakala
-            _LOGGER.warning(f"Geçersiz sıcaklık sensörü değeri: {new_state.state} - Hata: {e}")
-
+        except ValueError:
+            _LOGGER.warning(f"Geçersiz sıcaklık sensörü değeri: {new_state.state}")
+            self._attr_current_temperature = None
 
     @property
     def unique_id(self) -> str:
@@ -258,13 +240,8 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
 
 
     async def _async_send_command(self, command):
-        device_api = await self._async_get_device_api()
-        if device_api is None:
-            _LOGGER.error("Tuya cihazı mevcut değil.")
-            return
-
         try:
-            payload = device_api.generate_payload(tinytuya.CONTROL, command)
-            await self.hass.async_add_executor_job(device_api.send, payload)
+            payload = self._device.generate_payload(tinytuya.CONTROL, command) # self._device kullan
+            await self.hass.async_add_executor_job(self._device.send, payload) # self._device kullan
         except Exception as e:
             _LOGGER.error(f"Komut gönderme hatası: {e}")
