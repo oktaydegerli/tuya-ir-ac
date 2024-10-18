@@ -41,8 +41,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             )
         )
         return False
-
-    await async_add_entities([TuyaIrClimateEntity(hass, ac_name, device_id, device_local_key, device_ip, device_version, device_model, temperature_sensor)])
+    
+    entity = TuyaIrClimateEntity(hass, ac_name, device_id, device_local_key, device_ip, device_version, device_model, temperature_sensor)
+    await async_add_entities([entity]) 
     return True
 
 class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
@@ -64,7 +65,7 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
         self._device_api = None
         self._unsub_state_changed = None
         self._ir_codes = {}
-        self._commands_path = os.path.join(self.hass.config.path(), "custom_components", DOMAIN, f'{self._device_model}.json')
+        self._commands_path = os.path.join(hass.config.path(), "custom_components", DOMAIN, f'{self._device_model}.json')
 
         try:
             with open(self._commands_path, 'r') as file:
