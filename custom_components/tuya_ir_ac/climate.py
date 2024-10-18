@@ -53,7 +53,7 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
         self._attr_hvac_mode = HVACMode.OFF
         self._attr_fan_mode = "Orta"
         self._attr_target_temperature = 22
-        self._attr_current_temperature = None
+        self._attr_current_temperature = 20
         self._lock = threading.Lock()
         self._device_api = None
 
@@ -67,18 +67,18 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
             self._attr_fan_mode = last_state.attributes.get('fan_mode')
             self._attr_target_temperature = last_state.attributes.get('temperature')
 
-        if self._temperature_sensor:
-            async_track_state_change(self.hass, self._temperature_sensor, self._async_sensor_changed)
-            self.async_schedule_update_ha_state(force_refresh=True)
+        # if self._temperature_sensor:
+        #     async_track_state_change(self.hass, self._temperature_sensor, self._async_sensor_changed)
+        #     self.async_schedule_update_ha_state(force_refresh=True)
 
-    async def _async_sensor_changed(self, entity_id, old_state, new_state):
-        if new_state is None:
-            return
-        try:
-                self._attr_current_temperature = float(new_state.state)
-                self.async_write_ha_state()
-        except (TypeError, ValueError) as e:
-                _LOGGER.warning(f"Geçersiz sıcaklık sensörü değeri: {new_state.state} - Hata: {e}")
+    # async def _async_sensor_changed(self, entity_id, old_state, new_state):
+    #     if new_state is None:
+    #         return
+    #     try:
+    #             self._attr_current_temperature = float(new_state.state)
+    #             self.async_write_ha_state()
+    #     except (TypeError, ValueError) as e:
+    #             _LOGGER.warning(f"Geçersiz sıcaklık sensörü değeri: {new_state.state} - Hata: {e}")
 
     @property
     def unique_id(self) -> str:
