@@ -19,7 +19,7 @@ class TuyaIrClimateConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Required(CONF_DEVICE_IP): str,
             vol.Required(CONF_DEVICE_VERSION): vol.In(DEVICE_VERSIONS),
             vol.Required(CONF_DEVICE_MODEL): vol.In(DEVICE_MODELS),
-            vol.Optional(CONF_TEMPERATURE_SENSOR): str,
+            vol.Optional(CONF_TEMPERATURE_SENSOR, default=""): str,
         })
 
         return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)
@@ -48,7 +48,7 @@ class TuyaIrClimateOptionsFlow(config_entries.OptionsFlow):
             vol.Optional(CONF_DEVICE_IP, default=self.config_entry.options.get(CONF_DEVICE_IP, self.config_entry.data.get(CONF_DEVICE_IP))): str,
             vol.Optional(CONF_DEVICE_VERSION, default=self.config_entry.options.get(CONF_DEVICE_VERSION, self.config_entry.data.get(CONF_DEVICE_VERSION))): vol.In(DEVICE_VERSIONS),
             vol.Optional(CONF_DEVICE_MODEL, default=self.config_entry.options.get(CONF_DEVICE_MODEL, self.config_entry.data.get(CONF_DEVICE_MODEL))): vol.In(DEVICE_MODELS),
-            vol.Optional(CONF_TEMPERATURE_SENSOR, default=self.config_entry.options.get(CONF_TEMPERATURE_SENSOR, self.config_entry.data.get(CONF_TEMPERATURE_SENSOR))): str,
+            vol.Optional(CONF_TEMPERATURE_SENSOR, default=self.config_entry.options.get(CONF_TEMPERATURE_SENSOR, self.config_entry.data.get(CONF_TEMPERATURE_SENSOR, ""))): str,
         })
 
         return self.async_show_form(step_id="init", data_schema=data_schema)
