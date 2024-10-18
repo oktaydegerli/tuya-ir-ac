@@ -106,6 +106,7 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
             return
         try:
                 self._attr_current_temperature = float(new_state.state)
+                self.async_write_ha_state()
         except (TypeError, ValueError) as e:
                 _LOGGER.warning(f"Geçersiz sıcaklık sensörü değeri: {new_state.state} - Hata: {e}")
 
