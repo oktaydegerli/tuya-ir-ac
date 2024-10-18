@@ -43,7 +43,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         return False
     
     entity = TuyaIrClimateEntity(hass, ac_name, device_id, device_local_key, device_ip, device_version, device_model, temperature_sensor)
-    await async_add_entities([entity]) 
+    async_add_entities([entity]) 
     return True
 
 class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
