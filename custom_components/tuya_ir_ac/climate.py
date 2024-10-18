@@ -14,18 +14,18 @@ import threading
 
 _LOGGER = logging.getLogger(__name__)
 
-ir_codes1 = None
-ir_codes2 = None
+ir_codes1 = {}
+ir_codes2 = {}
 
-current_dir = os.path.dirname(__file__)
-commands_path1 = os.path.join(current_dir, 'MSZ-GE25VA.json')
-commands_path2 = os.path.join(current_dir, 'MSC-GE35VB.json')
+# current_dir = os.path.dirname(__file__)
+# commands_path1 = os.path.join(current_dir, 'MSZ-GE25VA.json')
+# commands_path2 = os.path.join(current_dir, 'MSC-GE35VB.json')
 
-with open(commands_path1, 'r') as file:
-    ir_codes1 = json.load(file)
+# with open(commands_path1, 'r') as file:
+#    ir_codes1 = json.load(file)
 
-with open(commands_path2, 'r') as file:
-    ir_codes2 = json.load(file)
+# with open(commands_path2, 'r') as file:
+#    ir_codes2 = json.load(file)
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -220,7 +220,8 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
             await self.hass.async_add_executor_job(self._send_command, command)
 
     def _send_command(self, command):
-        if self._device_api is None:
-            self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
-        payload = self._device_api.generate_payload(tinytuya.CONTROL, command)
-        self._device_api.send(payload)
+        self._device_api = None
+        # if self._device_api is None:
+        #    self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
+        # payload = self._device_api.generate_payload(tinytuya.CONTROL, command)
+        # self._device_api.send(payload)
