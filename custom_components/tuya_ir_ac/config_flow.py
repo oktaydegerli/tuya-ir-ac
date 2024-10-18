@@ -70,14 +70,14 @@ class TuyaIrClimateOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             # Seçenekleri güncelle
             return self.async_create_entry(title="", data=user_input)
-
+        
         data_schema = vol.Schema({
-            vol.Optional(CONF_AC_NAME, default=self._get_option_value(self, CONF_AC_NAME)): str,
-            vol.Optional(CONF_DEVICE_ID, default=self._get_option_value(self, CONF_DEVICE_ID)): str,
-            vol.Optional(CONF_DEVICE_LOCAL_KEY, default=self._get_option_value(self, CONF_DEVICE_LOCAL_KEY)): str,
-            vol.Optional(CONF_DEVICE_IP, default=self._get_option_value(self, CONF_DEVICE_IP)): str,
-            vol.Optional(CONF_DEVICE_VERSION, default=self._get_option_value(self, CONF_DEVICE_VERSION)): vol.In(DEVICE_VERSIONS),
-            vol.Optional(CONF_DEVICE_MODEL, default=self._get_option_value(self, CONF_DEVICE_MODEL)): vol.In(DEVICE_MODELS),
+            vol.Optional(CONF_AC_NAME, default=self._get_option_value(CONF_AC_NAME)): str,
+            vol.Optional(CONF_DEVICE_ID, default=self._get_option_value(CONF_DEVICE_ID)): str,
+            vol.Optional(CONF_DEVICE_LOCAL_KEY, default=self._get_option_value(CONF_DEVICE_LOCAL_KEY)): str,
+            vol.Optional(CONF_DEVICE_IP, default=self._get_option_value(CONF_DEVICE_IP)): str,
+            vol.Optional(CONF_DEVICE_VERSION, default=self._get_option_value(CONF_DEVICE_VERSION)): vol.In(DEVICE_VERSIONS),
+            vol.Optional(CONF_DEVICE_MODEL, default=self._get_option_value(CONF_DEVICE_MODEL)): vol.In(DEVICE_MODELS),
             vol.Optional(CONF_TEMPERATURE_SENSOR, default=self._get_option_value(CONF_TEMPERATURE_SENSOR)): str,
         })
 
