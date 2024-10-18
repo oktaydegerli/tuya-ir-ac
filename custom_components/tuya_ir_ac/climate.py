@@ -70,7 +70,7 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
         async with self._lock:
             if self._device_api is None:
                 try:
-                    self._device_api = await self.hass.async_add_executor_job(tinytuya.Device, self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version, max_workers=10)
+                    self._device_api = await self.hass.async_add_executor_job(tinytuya.Device, self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
                 except Exception as e:
                     _LOGGER.error(f"Tuya cihazı oluşturma hatası: {e}")
                     return None
@@ -106,7 +106,6 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
             return
         try:
                 self._attr_current_temperature = float(new_state.state)
-                self.async_write_ha_state()
         except (TypeError, ValueError) as e:
                 _LOGGER.warning(f"Geçersiz sıcaklık sensörü değeri: {new_state.state} - Hata: {e}")
 
@@ -192,8 +191,6 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
 
     async def _set_state(self):
 
-        self.async_write_ha_state()
-
         if self._attr_hvac_mode == HVACMode.OFF:
             hvac_mode_key = "off"
         elif self._attr_hvac_mode == HVACMode.HEAT_COOL:
@@ -252,6 +249,6 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
 
         try:
             payload = device_api.generate_payload(tinytuya.CONTROL, command)
-            await self.hass.async_add_executor_job(device_api.send, payload, max_workers=10)
+            await self.hass.async_add_executor_job(device_api.send, payload)
         except Exception as e:
             _LOGGER.error(f"Komut gönderme hatası: {e}")
