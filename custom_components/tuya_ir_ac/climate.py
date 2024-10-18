@@ -43,7 +43,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     
     try:
         device = await hass.async_add_executor_job(tinytuya.Device, device_id, device_ip, device_local_key, "default", 5, device_version)
-        entity = TuyaIrClimateEntity(hass, ac_name, device, device_model, temperature_sensor)
+        entity = TuyaIrClimateEntity(hass, ac_name, device, temperature_sensor)
         entity._ir_codes = await entity.async_load_ir_codes()
         async_add_entities([entity])
         return True
