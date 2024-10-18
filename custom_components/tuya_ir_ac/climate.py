@@ -44,7 +44,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     try:
         device = await hass.async_add_executor_job(tinytuya.Device, device_id, device_ip, device_local_key, "default", 5, device_version)
         entity = TuyaIrClimateEntity(hass, ac_name, device, temperature_sensor)
-        entity._ir_codes = await entity.async_load_ir_codes()
+
+        commands_path = os.path.join(hass.config.path(), "custom_components", DOMAIN, f'{device_model}.json')
+        entity._ir_codes = await entity.async_load_ir_codes(commands_path)
+        
         async_add_entities([entity])
         return True
     except Exception as e:
@@ -66,15 +69,14 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
         self._device_api = None
         self._unsub_state_changed = None
         self._ir_codes = {}
-        self._commands_path = os.path.join(hass.config.path(), "custom_components", DOMAIN, f'{self._device_model}.json')
         
-    async def async_load_ir_codes(self):
+    async def async_load_ir_codes(self, commands_path):
         try:
-            result = await self.hass.async_add_executor_job(lambda: json.load(open(self._commands_path, 'r')))
+            result = await self.hass.async_add_executor_job(lambda: json.load(open(commands_path, 'r')))
             return result
         except FileNotFoundError:
-            _LOGGER.error(f"IR kod dosyası bulunamadı: {self._commands_path}")
-            raise ValueError(f"IR kod dosyası bulunamadı: {self._commands_path}")
+            _LOGGER.error(f"IR kod dosyası bulunamadı: {commands_path}")
+            raise ValueError(f"IR kod dosyası bulunamadı: {commands_path}")
 
     async def async_added_to_hass(self):
 
