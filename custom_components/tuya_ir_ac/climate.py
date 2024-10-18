@@ -3,6 +3,7 @@ from homeassistant.components.climate.const import HVACMode, ClimateEntityFeatur
 from homeassistant.const import UnitOfTemperature
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.event import async_track_state_change
+from homeassistant.helpers import config_validation as cv
 from .const import DOMAIN, CONF_AC_NAME, CONF_DEVICE_ID, CONF_DEVICE_LOCAL_KEY, CONF_DEVICE_IP, CONF_DEVICE_VERSION, CONF_DEVICE_MODEL, CONF_TEMPERATURE_SENSOR
 
 import tinytuya
@@ -14,30 +15,35 @@ import threading
 
 _LOGGER = logging.getLogger(__name__)
 
-ir_codes1 = {}
-ir_codes2 = {}
-
-# current_dir = os.path.dirname(__file__)
-# commands_path1 = os.path.join(current_dir, 'MSZ-GE25VA.json')
-# commands_path2 = os.path.join(current_dir, 'MSC-GE35VB.json')
-
-# with open(commands_path1, 'r') as file:
-#    ir_codes1 = json.load(file)
-
-# with open(commands_path2, 'r') as file:
-#    ir_codes2 = json.load(file)
-
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-    ac_name = config_entry.data.get(CONF_AC_NAME)
-    device_id = config_entry.data.get(CONF_DEVICE_ID)
-    device_model = config_entry.data.get(CONF_DEVICE_MODEL)
-    device_local_key = config_entry.data.get(CONF_DEVICE_LOCAL_KEY)
-    device_ip = config_entry.data.get(CONF_DEVICE_IP)
-    device_version = config_entry.data.get(CONF_DEVICE_VERSION)
-    temperature_sensor = config_entry.data.get(CONF_TEMPERATURE_SENSOR)
-    
-    async_add_entities([TuyaIrClimateEntity(hass, ac_name, device_id, device_local_key, device_ip, device_version, device_model, temperature_sensor)])
+
+    def get_config_value(key):
+        return config_entry.options.get(key, config_entry.data.get(key))
+
+    ac_name = get_config_value(CONF_AC_NAME)
+    device_id = get_config_value(CONF_DEVICE_ID)
+    device_model = get_config_value(CONF_DEVICE_MODEL)
+    device_local_key = get_config_value(CONF_DEVICE_LOCAL_KEY)
+    device_ip = get_config_value(CONF_DEVICE_IP)
+    device_version = get_config_value(CONF_DEVICE_VERSION)
+    temperature_sensor = get_config_value(CONF_TEMPERATURE_SENSOR)
+
+    if any(value is None for value in [ac_name, device_id, device_model, device_local_key, device_ip, device_version]):
+        hass.async_create_task(
+            hass.services.async_call(
+                "persistent_notification",
+                "create",
+                {
+                    "title": "Tuya IR Climate Entegrasyon Hatası",
+                    "message": "Gerekli config seçenekleri eksik. Lütfen entegrasyonu kontrol edin.",
+                },
+            )
+        )
+        return False
+
+    await async_add_entities([TuyaIrClimateEntity(hass, ac_name, device_id, device_local_key, device_ip, device_version, device_model, temperature_sensor)])
+    return True
 
 class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
     def __init__(self, hass, ac_name, device_id, device_local_key, device_ip, device_version, device_model, temperature_sensor):
@@ -56,10 +62,30 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
         self._attr_current_temperature = 20
         self._lock = threading.Lock()
         self._device_api = None
+        self._unsub_state_changed = None
+        self._ir_codes = {}
+        self._commands_path = os.path.join(self.hass.config.path(), "custom_components", DOMAIN, f'{self._device_model}.json')
+
+    async def _async_get_device_api(self):
+        async with self._lock:
+            if self._device_api is None:
+                try:
+                    self._device_api = await self.hass.async_add_executor_job(tinytuya.Device, self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version, max_workers=10)
+                except Exception as e:
+                    _LOGGER.error(f"Tuya cihazı oluşturma hatası: {e}")
+                    return None
+            return self._device_api
 
     async def async_added_to_hass(self):
 
         await super().async_added_to_hass()
+
+        try:
+            with open(self._commands_path, 'r') as file:
+                self._ir_codes = json.load(file)
+        except FileNotFoundError:
+            _LOGGER.error(f"IR kod dosyası bulunamadı: {self._commands_path}")
+            return
 
         last_state = await self.async_get_last_state()
         if last_state is not None:
@@ -67,18 +93,23 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
             self._attr_fan_mode = last_state.attributes.get('fan_mode')
             self._attr_target_temperature = last_state.attributes.get('temperature')
 
-        # if self._temperature_sensor:
-        #     async_track_state_change(self.hass, self._temperature_sensor, self._async_sensor_changed)
-        #     self.async_schedule_update_ha_state(force_refresh=True)
+        if self._temperature_sensor:
+            self._unsub_state_changed = async_track_state_change(self.hass, self._temperature_sensor, self._async_sensor_changed)
 
-    # async def _async_sensor_changed(self, entity_id, old_state, new_state):
-    #     if new_state is None:
-    #         return
-    #     try:
-    #             self._attr_current_temperature = float(new_state.state)
-    #             self.async_write_ha_state()
-    #     except (TypeError, ValueError) as e:
-    #             _LOGGER.warning(f"Geçersiz sıcaklık sensörü değeri: {new_state.state} - Hata: {e}")
+    async def async_will_remove_from_hass(self):
+        if self._unsub_state_changed:
+            self._unsub_state_changed()
+            self._unsub_state_changed = None      
+
+    async def _async_sensor_changed(self, entity_id, old_state, new_state):
+        if new_state is None:
+            return
+        try:
+                self._attr_current_temperature = float(new_state.state)
+                self.async_write_ha_state()
+        except (TypeError, ValueError) as e:
+                _LOGGER.warning(f"Geçersiz sıcaklık sensörü değeri: {new_state.state} - Hata: {e}")
+
 
     @property
     def unique_id(self) -> str:
@@ -134,16 +165,14 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
         return self._attr_target_temperature
     
     async def async_set_hvac_mode(self, hvac_mode: HVACMode):
-        if hvac_mode is not None:
-            self._attr_hvac_mode = hvac_mode
-            await self._set_state()
+        self._attr_hvac_mode = hvac_mode
+        await self._set_state()
 
     async def async_set_fan_mode(self, fan_mode: str):
-        if fan_mode is not None:
-            self._attr_fan_mode = fan_mode
-            if self._attr_hvac_mode == HVACMode.OFF or self._attr_hvac_mode is None:
-                self._attr_hvac_mode = HVACMode.HEAT_COOL
-            await self._set_state()
+        self._attr_fan_mode = fan_mode
+        if self._attr_hvac_mode == HVACMode.OFF or self._attr_hvac_mode is None:
+            self._attr_hvac_mode = HVACMode.HEAT_COOL
+        await self._set_state()
     
     async def async_set_temperature(self, **kwargs):
         target_temperature = kwargs.get('temperature')
@@ -196,32 +225,33 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
         else:
             msg = 'Fan mode must be one of Otomatik, Sessiz, Düşük, Orta, Yüksek or En Yüksek'
             raise Exception(msg)
-
-
+        
         if hvac_mode_key == "off":
-            if self._device_model == 'MSZ-GE25VA':
-                ir_code = ir_codes1["off"]
-            else:
-                ir_code = ir_codes2["off"]
-        else: 
-            if self._device_model == 'MSZ-GE25VA':
-                ir_code = ir_codes1[hvac_mode_key][fan_mode_key][str(self._attr_target_temperature)]
-            else:
-                ir_code = ir_codes2[hvac_mode_key][fan_mode_key][str(self._attr_target_temperature)]
+            ir_code = self._ir_codes.get("off")
+        else:
+            ir_code = self._ir_codes.get(hvac_mode_key, {}).get(fan_mode_key, {}).get(str(self._attr_target_temperature))
+
+        if ir_code is None:
+            _LOGGER.error(f"Geçersiz HVAC modu, fan modu veya hedef sıcaklık kombinasyonu.")
+            return
 
         b64 = codecs.encode(codecs.decode(ir_code, 'hex'), 'base64').decode()
-
         command = {"1": "study_key", "7": b64}
 
-        if self._lock.locked() and self._device_api is None:
-            return
-        
-        with self._lock:
-            await self.hass.async_add_executor_job(self._send_command, command)
+        try:
+            await self._async_send_command(command)
+        except Exception as e:
+            _LOGGER.error(f"Durum ayarlama hatası: {e}")
 
-    def _send_command(self, command):
-        self._device_api = None
-        # if self._device_api is None:
-        #    self._device_api = tinytuya.Device(self._device_id, self._device_ip, self._device_local_key, "default", 5, self._device_version)
-        # payload = self._device_api.generate_payload(tinytuya.CONTROL, command)
-        # self._device_api.send(payload)
+
+    async def _async_send_command(self, command):
+        device_api = await self._async_get_device_api()
+        if device_api is None:
+            _LOGGER.error("Tuya cihazı mevcut değil.")
+            return
+
+        try:
+            payload = device_api.generate_payload(tinytuya.CONTROL, command)
+            await self.hass.async_add_executor_job(device_api.send, payload, max_workers=10)
+        except Exception as e:
+            _LOGGER.error(f"Komut gönderme hatası: {e}")
