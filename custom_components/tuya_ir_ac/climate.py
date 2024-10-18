@@ -66,6 +66,13 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
         self._ir_codes = {}
         self._commands_path = os.path.join(self.hass.config.path(), "custom_components", DOMAIN, f'{self._device_model}.json')
 
+        try:
+            with open(self._commands_path, 'r') as file:
+                self._ir_codes = json.load(file)
+        except FileNotFoundError:
+            _LOGGER.error(f"IR kod dosyası bulunamadı: {self._commands_path}")
+            raise ValueError(f"IR kod dosyası bulunamadı: {self._commands_path}")
+
     async def _async_get_device_api(self):
         async with self._lock:
             if self._device_api is None:
@@ -79,13 +86,6 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
     async def async_added_to_hass(self):
 
         await super().async_added_to_hass()
-
-        try:
-            with open(self._commands_path, 'r') as file:
-                self._ir_codes = json.load(file)
-        except FileNotFoundError:
-            _LOGGER.error(f"IR kod dosyası bulunamadı: {self._commands_path}")
-            return
 
         last_state = await self.async_get_last_state()
         if last_state is not None:
