@@ -113,7 +113,7 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
 
     @property
     def unique_id(self) -> str:
-        return f"{self._device_id}_{self._ac_name}"
+        return f"{self._device_id}"
 
     @property
     def name(self):
