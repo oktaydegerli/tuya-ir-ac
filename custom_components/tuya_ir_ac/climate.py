@@ -44,7 +44,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     
     try:
         device = await hass.async_add_executor_job(tinytuya.Device, device_id, device_ip, device_local_key, "default", 5, device_version)
-        entity = TuyaIrClimateEntity(hass, ac_name, device, temperature_sensor)
+        entity = TuyaIrClimateEntity(hass, f"{device_id}", ac_name, device, temperature_sensor)
 
         commands_path = os.path.join(hass.config.path(), "custom_components", DOMAIN, f'{device_model}.json')
         entity._ir_codes = await entity.async_load_ir_codes(commands_path)
@@ -57,10 +57,11 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     
 
 class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
-    def __init__(self, hass, ac_name, device, temperature_sensor):
+    def __init__(self, hass, unique_id, ac_name, device, temperature_sensor):
         self._enable_turn_on_off_backwards_compatibility = False
         self.hass = hass
         self._ac_name = ac_name
+        self._attr_unique_id = unique_id
         self._device = device
         self._temperature_sensor = temperature_sensor
         self._attr_hvac_mode = HVACMode.OFF
@@ -111,7 +112,7 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
 
     @property
     def unique_id(self) -> str:
-        return f"{self._device_id}"
+        return f"{self._attr_unique_id}"
 
     @property
     def name(self):
