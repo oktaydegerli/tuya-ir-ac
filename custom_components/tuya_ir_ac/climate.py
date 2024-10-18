@@ -1,6 +1,7 @@
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import HVACMode, ClimateEntityFeature
 from homeassistant.const import UnitOfTemperature
+from homeassistant.const import STATE_UNKNOWN, STATE_UNAVAILABLE
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers import config_validation as cv
@@ -60,7 +61,7 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
         self._attr_hvac_mode = HVACMode.OFF
         self._attr_fan_mode = "Orta"
         self._attr_target_temperature = 22
-        self._attr_current_temperature = 20
+        self._attr_current_temperature = None
         self._device_api_lock = asyncio.Lock()
         self._device_api = None
         self._unsub_state_changed = None
@@ -112,14 +113,14 @@ class TuyaIrClimateEntity(ClimateEntity, RestoreEntity):
 
     async def _async_sensor_changed(self, event):
         """Sıcaklık sensörünün durumu değiştiğinde çağrılır."""
-        new_state = event.data.get("new_state")  # new_state'i event verisinden al
-        if new_state is None:
+        new_state = event.data.get("new_state")
+        if new_state is None or new_state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE, "unknown", "unavailable", ""): # None ve diğer geçersiz durumları kontrol et
             return
 
         try:
             self._attr_current_temperature = float(new_state.state)
             self.async_write_ha_state()
-        except (TypeError, ValueError) as e:
+        except ValueError as e: # Sadece ValueError yakala
             _LOGGER.warning(f"Geçersiz sıcaklık sensörü değeri: {new_state.state} - Hata: {e}")
 
 
